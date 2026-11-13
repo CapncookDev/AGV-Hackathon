@@ -99,6 +99,7 @@ function solveAll() {
 // ---------- styling ----------
 const AGE_BUCKETS = [[20, '#7fb3c9'], [40, '#4f8fb0'], [60, '#c4840a'], [80, '#b0432d'], [999, '#6e1f12']];
 const COND_COL = ['', '#2e7d4f', '#7aa65a', '#c7b23a', '#d98a1c', '#c4512a', '#7e1d12'];
+const SETTLE_COL = { low: '#7aa65a', medium: '#d9a21c', high: '#b0432d' };
 const MAT_COL = { concrete: '#6b6f74', PVC: '#2f7fb7', stoneware: '#a0623a', 'asbestos cement': '#b0432d', 'cast iron': '#3a3a3a', PE: '#7e57c2', unknown: '#aaa' };
 
 function pipeColor(p) {
@@ -107,6 +108,7 @@ function pipeColor(p) {
   if (by === 'cond') return COND_COL[p.props.cond];
   if (by === 'material') return MAT_COL[p.props.material] || '#aaa';
   if (by === 'age') return AGE_BUCKETS.find(([a]) => p.props.age < a)[1];
+  if (by === 'settle') return SETTLE_COL[p.props.settle] || '#aaa';
   const v = p.sol.ivNow;
   return v <= 0 ? '#c9d3da' : v < 5000 ? '#f2c66d' : v < 25000 ? '#e08a2c' : v < 100000 ? '#c4512a' : '#7e1d12';
 }
@@ -169,6 +171,7 @@ function renderLegend() {
   if (by === 'action') items = [['defer', c.defer], ['reline', c.reline], ['replace', c.replace]];
   else if (by === 'cond') items = [1, 2, 3, 4, 5, 6].map(s => [`class ${s}`, COND_COL[s]]);
   else if (by === 'material') items = Object.entries(MAT_COL);
+  else if (by === 'settle') items = [['low settlement risk', SETTLE_COL.low], ['medium', SETTLE_COL.medium], ['high (peat / clay below)', SETTLE_COL.high]];
   else if (by === 'age') items = [['< 20 yr', AGE_BUCKETS[0][1]], ['20–39', AGE_BUCKETS[1][1]], ['40–59', AGE_BUCKETS[2][1]], ['60–79', AGE_BUCKETS[3][1]], ['80+', AGE_BUCKETS[4][1]]];
   else items = [['no gain (defer)', '#c9d3da'], ['< €5k', '#f2c66d'], ['€5–25k', '#e08a2c'], ['€25–100k', '#c4512a'], ['> €100k', '#7e1d12']];
   $('legend').innerHTML = items.map(([k, col]) => `<span style="--c:${col}">${k}</span>`).join('');
@@ -285,6 +288,7 @@ function renderSelection(p) {
         <dt>Size</dt><dd>Ø${pr.diameter_mm} mm · ${pr.length_m} m long · ${pr.depth_m} m deep</dd>
         <dt>Expected life</dt><dd>${pr.life} yr · ${remaining ? `~${remaining} yr left` : 'past expected life'}</dd>
         <dt>Condition</dt><dd>class ${pr.cond} of 6 <span class="tag">synthetic</span> · ${(POF[pr.cond] * 100).toFixed(1)} % failure chance /yr</dd>
+        <dt>Soil (GeoTOP)</dt><dd>pipe in ${pr.soil_at_pipe === "anthropogenic" ? "made ground (raised fill)" : pr.soil_at_pipe}; below it ${pr.peat_m} m peat, ${pr.clay_m} m clay → <b>${pr.settle} settlement risk</b></dd>
         <dt>Surroundings</dt><dd>${pr.addresses_30m} addresses ≤30 m · ${pr.trees_4m} trees ≤4 m${pr.protected_trees_10m ? ` · <b>${pr.protected_trees_10m} protected</b> ≤10 m` : ''}</dd>
       </dl>
     </section>

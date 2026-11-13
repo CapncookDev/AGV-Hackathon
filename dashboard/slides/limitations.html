@@ -43,28 +43,29 @@
   <div class="cols">
     <section class="card">
       <h2><span class="num">1</span>Cost data decides <i>how</i>, not <i>whether</i></h2>
-      <svg viewBox="0 0 760 250" height="220" role="img" aria-label="Advice per cost source: Barendrecht 2023 gives 1,295 defer, 86 reline, 423 replace; VMM 2018 gives 1,272 defer, 312 reline, 220 replace.">
+      <svg viewBox="0 0 760 250" height="220" role="img" aria-label="Advice per cost source: Barendrecht 2023 gives 1,210 defer, 153 reline, 441 replace; VMM 2018 gives 1,198 defer, 349 reline, 257 replace.">
         <!-- bars scaled to 1,804 sections over 560 px -->
         <text x="0" y="52" font-size="22" font-weight="700" fill="#1b2430">Barendrecht 2023</text>
-        <text x="0" y="78" font-size="18" fill="#5f6b78">€5.2M now</text>
-        <rect x="200" y="28" width="402" height="56" rx="8" fill="#4f7a5e"/>
-        <rect x="602" y="28" width="27" height="56" fill="#c4840a"/>
-        <rect x="629" y="28" width="131" height="56" rx="8" fill="#b0432d"/>
-        <text x="216" y="64" font-size="22" font-weight="700" fill="#fff">1,295 defer</text>
-        <text x="694" y="64" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">423</text>
+        <text x="0" y="78" font-size="18" fill="#5f6b78">€6.4M now</text>
+        <rect x="200" y="28" width="376" height="56" rx="8" fill="#4f7a5e"/>
+        <rect x="576" y="28" width="48" height="56" fill="#c4840a"/>
+        <rect x="624" y="28" width="136" height="56" rx="8" fill="#b0432d"/>
+        <text x="216" y="64" font-size="22" font-weight="700" fill="#fff">1,210 defer</text>
+        <text x="600" y="64" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">153</text>
+        <text x="692" y="64" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">441</text>
         <text x="0" y="172" font-size="22" font-weight="700" fill="#1b2430">VMM 2018</text>
-        <text x="0" y="198" font-size="18" fill="#5f6b78">indexed · €11.8M now</text>
-        <rect x="200" y="148" width="395" height="56" rx="8" fill="#4f7a5e"/>
-        <rect x="595" y="148" width="97" height="56" fill="#c4840a"/>
-        <rect x="692" y="148" width="68" height="56" rx="8" fill="#b0432d"/>
-        <text x="216" y="184" font-size="22" font-weight="700" fill="#fff">1,272 defer</text>
-        <text x="643" y="184" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">312</text>
-        <text x="726" y="184" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">220</text>
+        <text x="0" y="198" font-size="18" fill="#5f6b78">indexed · €15.0M now</text>
+        <rect x="200" y="148" width="372" height="56" rx="8" fill="#4f7a5e"/>
+        <rect x="572" y="148" width="108" height="56" fill="#c4840a"/>
+        <rect x="680" y="148" width="80" height="56" rx="8" fill="#b0432d"/>
+        <text x="216" y="184" font-size="22" font-weight="700" fill="#fff">1,198 defer</text>
+        <text x="626" y="184" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">349</text>
+        <text x="720" y="184" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">257</text>
         <text x="200" y="240" font-size="18" fill="#5f6b78"><tspan fill="#4f7a5e" font-weight="700">■ defer</tspan>   <tspan fill="#c4840a" font-weight="700">■ reline</tspan>   <tspan fill="#b0432d" font-weight="700">■ replace</tspan></text>
       </svg>
       <div class="stats">
-        <div><div class="big">87 %</div><span>same advice under both cost sources</span></div>
-        <div><div class="big">197</div><span>sections flip from replace to reline</span></div>
+        <div><div class="big">89 %</div><span>same advice under both cost sources</span></div>
+        <div><div class="big">180</div><span>sections flip from replace to reline</span></div>
       </div>
       <p>No sewer costs in the data (Maximo cost fields are empty), so we use published unit prices. Their reline-to-replace ratio steers the choice.</p>
       <div class="fix"><b>Fix:</b> Waternet’s own Maximo replacement and relining costs per diameter.</div>
@@ -91,8 +92,8 @@
         <path d="M470 215 L590 145" stroke="#5f6b78" stroke-width="2.5" fill="none" marker-end="url(#ah)"/>
       </svg>
       <div class="stats">
-        <div><div class="big">0.71</div><span>correlation of condition with age ÷ expected life</span></div>
-        <div><div class="big">85 %</div><span>of act / defer advice reproduced by “act past 69 % of expected life”</span></div>
+        <div><div class="big">0.73</div><span>correlation of condition with age ÷ expected life</span></div>
+        <div><div class="big">84 %</div><span>of act / defer advice reproduced by “act past 69 % of expected life”</span></div>
       </div>
       <p>No inspections in the data, so the condition class is simulated from age and material, the same inputs the decision uses. <b>Whether</b> to act is mostly an age rule.</p>
       <div class="fix"><b>Fix:</b> real camera-inspection scores (NEN-EN 13508-2 → class 1–6) replace the synthetic class. Same model, no loop.</div>

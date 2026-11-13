@@ -187,6 +187,46 @@ def pipe_quantities(d, depth, length, mat):
     }
 
 
+# Settlement risk from TNO GeoTOP: compressible soil (peat, clay) between the pipe and the first sand layer.
+SETTLE = {  # class -> (life multiplier, replace-cost surcharge) — ASSUMPTIONS
+    "low": (1.0, 0.0), "medium": (0.9, 0.10), "high": (0.8, 0.20),
+}
+
+
+def load_geotop():
+    path = RAW / "geotop.json"
+    if not path.exists():
+        print("no data/raw/geotop.json — run explore/fetch_geotop.py for soil types")
+        return None
+    return json.loads(path.read_text())
+
+
+def soil_at(geo, x, y, pipe_bottom):
+    """Soil class at pipe depth and metres of peat / clay below the pipe down to the first sand layer."""
+    if geo is None:
+        return None
+    key = f"{int(round(x / 100) * 100)},{int(round(y / 100) * 100)}"  # GeoTOP cell centres are on whole 100 m
+    col = geo["lithok"].get(key)
+    if col is None:
+        return None
+    z, cls = geo["z"], geo["classes"]
+    k_pipe = min(range(len(z)), key=lambda k: abs(z[k] - pipe_bottom))
+    at_pipe = cls.get(str(col[k_pipe]), "unknown")
+    peat = clay = 0.0
+    for k in range(k_pipe - 1, -1, -1):          # walk down from the pipe
+        c = col[k]
+        if c in (5, 6, 7, 8):                    # reached sand / gravel: firm layer
+            break
+        if c == 1:
+            peat += 0.5
+        elif c in (2, 3):
+            clay += 0.5
+    compress = peat + 0.5 * clay
+    # bands set on this area's spread (≈ lowest third / middle / highest quarter); Amsterdam has peat almost everywhere
+    risk = "high" if compress >= 2.5 else "medium" if compress >= 1.5 else "low"
+    return {"soil_at_pipe": at_pipe, "peat_m": peat, "clay_m": clay, "settle": risk}
+
+
 def load_graph():
     g = rdflib.Graph()
     g.parse(DATA / "Jan de Jonghstraat/gis-export.ttl")
@@ -335,6 +375,7 @@ def main():
                 ndw_feats.append({"type": "Feature", "geometry": geom, "properties": item})
             el.clear()
 
+    geotop = load_geotop()
     # pipes with model inputs
     pipe_feats, rd_rows = [], []
     for p in pipes_raw:
@@ -356,6 +397,11 @@ def main():
         bobs = [x for x in (p["bob_b"], p["bob_e"]) if x is not None]
         depth = (sum(grounds) / len(grounds) - sum(bobs) / len(bobs)) if grounds and bobs else 2.0
         depth = max(0.8, min(6.0, depth))
+        mid = pts[len(pts) // 2]
+        bob_mid = (sum(bobs) / len(bobs)) if bobs else -2.0
+        soil = soil_at(geotop, mid[0], mid[1], bob_mid) or {"soil_at_pipe": "unknown", "peat_m": 0.0, "clay_m": 0.0, "settle": "low"}
+        life_mult, dig_surcharge = SETTLE[soil["settle"]]
+        life = round(life * life_mult)
         cond = synthetic_condition(p["uri"], age, life)
         n_addr = sum(1 for _ in addr_grid.near_line(pts, 30))
         near_trees = list(tree_grid.near_line(pts, 4))
@@ -381,7 +427,8 @@ def main():
             "addresses_30m": n_addr, "trees_4m": len(near_trees), "protected_trees_10m": n_prot,
             "planned_works": works[:6],
             "reline_possible": True,
-            **pipe_quantities(d, depth, length, mat),
+            **soil,
+            **{k: (round(v * (1 + dig_surcharge), 1) if k == "cost_rep_m" else v) for k, v in pipe_quantities(d, depth, length, mat).items()},
         }
         pipe_feats.append({"type": "Feature", "geometry": {"type": "LineString", "coordinates": [wgs(*xy) for xy in pts]},
                            "properties": props})
