@@ -66,6 +66,21 @@
       <summary><h2>Ranking &amp; budget</h2></summary>
       <div id="ranking"><p class="muted">Calculating…</p></div>
     </details>
+    <details class="panel" id="optPanel">
+      <summary><h2>How we optimise</h2></summary>
+      <p class="note" style="margin:0 0 8px">Per pipe, the model picks the option with the lowest lifetime cost to society. Then the budget decides which go first.</p>
+      <div class="formula">minimise &nbsp;Σ<sub>t</sub> β<sup>t</sup> · E[ FV + SV + EV<sub>other</sub> + <b>λ<sub>CO₂</sub> × GWP</b> + p<sub>fail</sub>(class) × failure cost ]</div>
+      <table class="assume">
+        <tbody>
+          <tr><td>Choice</td><td>Every year: <b style="color:var(--defer)">defer</b>, <b style="color:var(--reline)">reline</b> or <b style="color:var(--replace)">replace</b>. Solved over condition classes 1–6 (Markov decision process, value iteration), discounted at 2.25 %/yr (β).</td></tr>
+          <tr><td>Cost</td><td>FV what Waternet pays · SV road closure and trees · EV environmental cost (MKI)</td></tr>
+          <tr><td>Carbon</td><td>GWP of pipe or liner (NMD via Madaster) and the works (Ecoinvent), priced at the CO₂ shadow price λ = €116/t</td></tr>
+          <tr><td>Risk</td><td>Waiting has a price: failure chance per class (0.1–20 %/yr) × cost of an emergency repair. The worse the pipe, the more waiting costs. Relining is not offered at class 6.</td></tr>
+          <tr><td>Function</td><td>Hydraulic capacity per option (Manning) is shown on every pipe card, so a choice that loses capacity is visible.</td></tr>
+          <tr><td>Budget</td><td>All interventions ranked by value of acting now; a yearly cap on FV takes them in that order (see Ranking &amp; budget).</td></tr>
+        </tbody>
+      </table>
+    </details>
     <details class="panel" id="limitsPanel">
       <summary><h2>Limitations</h2></summary>
       <div id="limitations" class="limits"><p class="muted">Calculating…</p></div>
