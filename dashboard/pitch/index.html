@@ -79,43 +79,41 @@ nav button:disabled { opacity: .4; cursor: default; }
   <div class="grid">
     <div class="card"><span class="big">3</span><span class="muted">separate systems: cost in Maximo, risk in inspection data, function in GIS and IFC</span></div>
     <div class="card"><span class="big">Manual</span><span class="muted">work to bring them together into one view</span></div>
-    <div class="card"><span class="big">Apart</span><span class="muted">social, environmental and financial costs aren't priced together</span></div>
+    <div class="card"><span class="big">No link</span><span class="muted">between financial, environmental and social costs</span></div>
   </div>
   <p class="src">Use Case 4 brief, Waternet / AGV</p>
 </section>
 
 <section class="slide" data-title="Idea">
   <span class="eyebrow">The story · Our idea · 0:20</span>
-  <div class="answer">We help Waternet decide, for every sewer section, whether to <span class="d">defer</span>, <span class="r">reline</span> or <span class="x">replace</span>, by putting money, disruption and carbon in one euro value and letting a risk model choose the moment.</div>
+  <div class="answer">We help Waternet decide, for every sewer section, whether to <span class="d">defer</span>, <span class="r">reline</span> or <span class="x">replace</span>, by putting financial, social and environmental factors in one euro value and letting a risk model advise the outcome.</div>
   <div class="grid" style="--n:4">
-    <div class="card"><span class="step">1</span><b>Knowledge graph</b><span class="muted">One SPARQL query: 1,804 pipes</span></div>
-    <div class="card"><span class="step">2</span><b>Three values</b><span class="muted">Financial · social · environmental, in €</span></div>
-    <div class="card"><span class="step">3</span><b>Risk over time</b><span class="muted">Condition 1–6, Markov model, soil</span></div>
-    <div class="card"><span class="step">4</span><b>Advice + why</b><span class="muted">Per pipe, in a browser and in IFC</span></div>
+    <div class="card"><span class="step">1</span><b>Knowledge Graph</b><span class="muted">One SPARQL query · 1,804 pipes</span></div>
+    <div class="card"><span class="step">2</span><b>Three Values</b><span class="muted">Financial · Social · Environmental, in €</span></div>
+    <div class="card"><span class="step">3</span><b>Risk Over Time</b><span class="muted">Condition 1–6 · Markov model · Soil</span></div>
+    <div class="card"><span class="step">4</span><b>Advice + Why</b><span class="muted">Per pipe, in a browser and in IFC</span></div>
   </div>
-  <p class="src">Team: [names · who brings what · who says which part]</p>
 </section>
 
 <section class="slide" data-title="Demo">
   <span class="eyebrow">The proof · Demo · 1:00</span>
-  <h2>The result first: one advice per pipe.</h2>
+  <h2>Our solution: for each pipe, an individual advice.</h2>
   <div class="grid">
-    <div class="card"><span class="big">1,804</span><span class="muted">sewer sections in the 3D island</span></div>
-    <div class="card"><span class="big"><span class="r">153</span> · <span class="x">441</span></span><span class="muted">reline · replace now</span></div>
-    <div class="card"><span class="big">€6.4M</span><span class="muted">to invest now, with 991 t CO₂e and €2.7M disruption</span></div>
+    <div class="card"><b>Every Pipe</b><span class="muted">Gets its own advice: <span class="d">defer</span>, <span class="r">reline</span> or <span class="x">replace</span>.</span></div>
+    <div class="card"><b>One Price</b><span class="muted">Money, disruption and carbon, added up in euros for each option.</span></div>
+    <div class="card"><b>Explained</b><span class="muted">Click any pipe on the 3D map to see why.</span></div>
   </div>
-  <div class="card"><b>Notice</b><ul class="muted"><li>Colours are the advice; the peat under the island is real soil data</li><li>Click a pipe: state, advice and why, FV · SV · EV, next street opening</li><li>Switch the cost source: the choice between reline and replace shifts</li></ul></div>
+  <div class="card"><b>What the demo shows</b><ul class="muted"><li>Most pipes can wait: 1,210 of the 1,804 pipes in our demo area need nothing now.</li><li>Where action is needed, the model mostly advises replacing (441) over relining (153).</li><li>The demo covers part of Amsterdam. The same model is built to run on Waternet's whole network.</li></ul></div>
   <a class="cta" href="../?tour=1">Open the live demo →</a>
 </section>
 
 <section class="slide" data-title="Under the hood">
   <span class="eyebrow">The proof · Under the hood · 1:00</span>
   <h2>What is real, what is inferred, what is synthetic.</h2>
-  <div class="grid" style="--n:4">
+  <div class="grid">
     <div class="card"><b class="d">Real</b><ul class="muted"><li>W-OTL graph via SPARQL</li><li>NMD pipes &amp; liners (Madaster API)</li><li>ecoinvent MKI</li><li>TNO GeoTOP soil</li><li>BAG addresses, trees</li><li>Street works: WIOR, Stadsregie, NDW</li></ul></div>
-    <div class="card"><b class="r">Inferred</b><ul class="muted"><li>Unit costs from Barendrecht 2023</li><li>Closure days from WIOR</li><li>Settlement effect of peat</li><li>Failure cost</li></ul></div>
-    <div class="card"><b class="x">Synthetic</b><ul class="muted"><li>Condition class 1–6 from age and material</li><li>Failure rates per class</li></ul></div>
-    <div class="card"><b>Doesn’t work yet</b><ul class="muted"><li>No Maximo costs: cost source changes 11% of advice</li><li>“Act past 69% of life” reproduces 84% of advice</li><li>No failure history</li></ul></div>
+    <div class="card"><b class="r">Inferred</b><ul class="muted"><li>Unit costs from Barendrecht 2023, as Maximo costs were not available (the cost source changes 11% of advice)</li><li>Closure days from WIOR</li><li>Settlement effect of peat</li><li>Failure cost</li></ul></div>
+    <div class="card"><b class="x">Synthetic</b><ul class="muted"><li>Condition class 1–6 from age and material</li><li>Failure rates per class, as there is no failure history</li><li>So 84% of advice follows one rule: act past 69% of a pipe's life</li></ul></div>
   </div>
   <p class="src"><a href="../slides/limitations.html" target="_blank" rel="noopener">Limitations in detail →</a> · <a href="../data/sewer.ifc">IFC 4.3 model with soil layers</a></p>
 </section>
