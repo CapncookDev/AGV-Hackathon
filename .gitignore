@@ -43,3 +43,6 @@ data/raw/
 
 # Generated outputs from internal data
 data/out/
+
+# Dashboard data generated from internal + open data
+dashboard/data/

@@ -125,10 +125,51 @@ def main():
     for (t, gt), n in type_counts.most_common():
         print(f"  type {t}  {gt:10} {n}")
 
-    html = TEMPLATE.replace("__DATA__", json.dumps({"type": "FeatureCollection", "features": features}))
+    wior = load_wior(features)
+    print(f"{len(wior)} WIOR street works overlap the network area")
+
+    html = (TEMPLATE
+            .replace("__DATA__", json.dumps({"type": "FeatureCollection", "features": features}))
+            .replace("__WIOR__", json.dumps({"type": "FeatureCollection", "features": wior})))
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(html)
     print(f"wrote {OUT} ({OUT.stat().st_size / 1e6:.1f} MB)")
+
+
+WIOR = ROOT / "data/raw/wior.geojson"
+
+
+def load_wior(features):
+    """WIOR works (RD polygons) whose bounding box overlaps the network, converted to WGS84."""
+    if not WIOR.exists():
+        print("no data/raw/wior.geojson — run explore/fetch_wior.py to add street works")
+        return []
+    xs, ys = [], []
+    for f in features:
+        c = f["geometry"]["coordinates"]
+        for lon, lat in ([c] if f["geometry"]["type"] == "Point" else c):
+            xs.append(lon); ys.append(lat)
+    minx, maxx, miny, maxy = min(xs), max(xs), min(ys), max(ys)
+
+    def conv(ring):
+        return [[round(v, 7) for v in to_wgs84.transform(x, y)] for x, y, *_ in ring]
+
+    out = []
+    for f in json.loads(WIOR.read_text())["features"]:
+        g = f.get("geometry") or {}
+        if g.get("type") == "Polygon":
+            polys = [g["coordinates"]]
+        elif g.get("type") == "MultiPolygon":
+            polys = g["coordinates"]
+        else:
+            continue
+        polys = [[conv(r) for r in p] for p in polys]
+        pts = [pt for p in polys for r in p for pt in r]
+        if max(p[0] for p in pts) < minx or min(p[0] for p in pts) > maxx or max(p[1] for p in pts) < miny or min(p[1] for p in pts) > maxy:
+            continue
+        geom = {"type": "Polygon", "coordinates": polys[0]} if len(polys) == 1 else {"type": "MultiPolygon", "coordinates": polys}
+        out.append({"type": "Feature", "geometry": geom, "properties": f["properties"]})
+    return out
 
 
 TEMPLATE = r"""<!doctype html>
@@ -172,7 +213,15 @@ const base = L.tileLayer('https://service.pdok.nl/brt/achtergrondkaart/wmts/v2_0
   {maxZoom: 21, maxNativeZoom: 19, attribution: 'Kaart &copy; PDOK / Kadaster'}).addTo(map);
 const aerial = L.tileLayer('https://service.pdok.nl/hwh/luchtfotorgb/wmts/v1_0/Actueel_orthoHR/EPSG:3857/{z}/{x}/{y}.jpeg',
   {maxZoom: 21, maxNativeZoom: 19, attribution: 'Luchtfoto &copy; PDOK'});
-L.control.layers({'Map': base, 'Aerial (PDOK)': aerial}, null, {position: 'topleft'}).addTo(map);
+const wiorData = __WIOR__;
+const wiorColor = {'Uitvoering': '#7f7f7f', 'Projectaanpak': '#e08a00', 'Ontwerp': '#c0392b'};
+const wior = L.geoJSON(wiorData, {
+  style: f => ({color: wiorColor[f.properties.hoofdstatus] || '#555', weight: 1, fillOpacity: .18, dashArray: '3 3'}),
+  onEachFeature: (f, l) => l.on('click', () => show(Object.assign({'layer': 'WIOR street work'}, f.properties))),
+});
+L.control.layers({'Map': base, 'Aerial (PDOK)': aerial},
+  {[`Street works WIOR (${wiorData.features.length}) — grey: done/ongoing, orange: planned, red: design`]: wior},
+  {position: 'topleft', collapsed: false}).addTo(map);
 
 const palette = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf','#393b79','#637939','#8c6d31','#843c39','#7b4173','#3182bd'];
 const hidden = new Set();

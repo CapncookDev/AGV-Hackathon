@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sewer Renewal Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="eyebrow">Hack the Water Graph · UC4</span><h1>Sewer Renewal Dashboard</h1></div>
+  <div class="summary" id="summary"></div>
+</header>
+<div class="layout">
+  <div class="view">
+    <div id="map"></div>
+    <div id="scene3d" hidden></div>
+    <div class="view-switch seg" id="viewSwitch">
+      <button type="button" data-view="map" class="on">2D map</button><button type="button" data-view="3d">3D island</button>
+    </div>
+    <div class="view-note" id="viewNote" hidden>
+      Depth below ground drawn 6× deeper, pipes 5× thicker. Drag to orbit, right-drag to pan, scroll to zoom. Click a pipe or the blue pumping station.
+      <label><input type="checkbox" id="seeThrough" checked> X-ray: see pipes through the ground</label>
+      <label><input type="checkbox" id="show-buildings" checked> Buildings</label>
+      <label><input type="checkbox" id="show-trees" checked> Trees</label>
+      <label><input type="checkbox" id="show-manholes" checked> Manholes</label>
+    </div>
+  </div>
+  <aside class="side">
+    <section class="panel" id="selection">
+      <h2>Click a pipe</h2>
+      <p class="muted">Every sewer pipe has an advice: defer, reline or replace. Click one to see its condition, surroundings and the integrated value of acting now. Click the pumping station for its BIM model.</p>
+    </section>
+    <details class="panel" open>
+      <summary><h2>Shadow prices &amp; assumptions</h2></summary>
+      <div class="controls" id="controls"></div>
+      <p class="note">Each input shows its source. Green = sourced, amber = method sourced but number estimated, red = our assumption to verify with Waternet. Condition classes are synthetic (Markov ageing from build year).</p>
+    </details>
+    <details class="panel" open>
+      <summary><h2>Map</h2></summary>
+      <label class="ctl"><span>Colour pipes by</span>
+        <select id="colorBy">
+          <option value="action">advice</option>
+          <option value="cond">condition class (synthetic)</option>
+          <option value="material">material</option>
+          <option value="age">age</option>
+          <option value="iv">value of acting now</option>
+        </select>
+      </label>
+      <div class="legend" id="legend"></div>
+      <p class="note">BIM: <a href="data/sewer.ifc" download>sewer network IFC 4.3 (true size)</a> · <a href="data/sewer_x4.ifc" download>pipes ×4</a> · <a href="#" id="openStation">pumping station model</a></p>
+    </details>
+    <div class="disclaimer">Prototype built during Hack the Water Graph (Amsterdam, 13 November 2026). Not an official Waternet or AGV product. Condition scores are synthetic and costs are assumptions; results are estimates.</div>
+  </aside>
+</div>
+<div class="modal" id="bimModal" hidden>
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2 id="bimTitle">BIM model</h2>
+      <div class="seg" id="bimScale" hidden>
+        <button type="button" data-key="sewer" class="on">Pipes ×4</button><button type="button" data-key="sewerTrue">True size</button>
+      </div>
+      <button id="bimClose" type="button">Close</button>
+    </div>
+    <div id="bimView"></div>
+    <div class="modal-foot" id="bimInfo">Loading…</div>
+  </div>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
