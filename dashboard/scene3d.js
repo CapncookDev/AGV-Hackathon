@@ -176,6 +176,14 @@ export async function initScene(container, { onPick, onStation, diameters }) {
       surfaces.forEach(m => { m.material.opacity = m.userData.opacity * (seeThrough ? 0.45 : 1); });
     },
     show(layer, on) { ({ buildings, trees: treeMesh, manholes: mh })[layer].visible = on; },
+    // hide pipes whose id fails the filter (zero-scale instances are not drawn and not pickable)
+    filter(keep) {
+      if (!S._orig) S._orig = Array.from({ length: segs.length }, (_, i) => { const m = new THREE.Matrix4(); pipeMesh.getMatrixAt(i, m); return m; });
+      const zero = new THREE.Matrix4().makeScale(0, 0, 0);
+      segOf.forEach((id, i) => pipeMesh.setMatrixAt(i, keep(id) ? S._orig[i] : zero));
+      pipeMesh.instanceMatrix.needsUpdate = true;
+      pipeMesh.computeBoundingSphere();
+    },
   };
   resize();
   return S;

@@ -108,8 +108,27 @@ function pipeColor(p) {
   return v <= 0 ? '#c9d3da' : v < 5000 ? '#f2c66d' : v < 25000 ? '#e08a2c' : v < 100000 ? '#c4512a' : '#7e1d12';
 }
 
+const SHOW = { defer: true, reline: true, replace: true };
+function applyFilter() {
+  pipes.forEach(p => {
+    const on = SHOW[p.sol.action];
+    if (on && !pipeLayer.hasLayer(p.layer)) pipeLayer.addLayer(p.layer);
+    if (!on && pipeLayer.hasLayer(p.layer)) pipeLayer.removeLayer(p.layer);
+  });
+  scene3d?.filter(id => SHOW[pipeById[id]?.sol.action]);
+}
+function renderFilter() {
+  const n = { defer: 0, reline: 0, replace: 0 };
+  pipes.forEach(p => n[p.sol.action]++);
+  $('filterBar').innerHTML = '<span class="lbl">Show</span>' + ['defer', 'reline', 'replace'].map(a =>
+    `<button type="button" class="chip ${a} ${SHOW[a] ? 'on' : ''}" data-a="${a}" aria-pressed="${SHOW[a]}">${a} <b>${n[a]}</b></button>`).join('');
+  $('filterBar').querySelectorAll('button').forEach(b => { b.onclick = () => { SHOW[b.dataset.a] = !SHOW[b.dataset.a]; renderFilter(); applyFilter(); }; });
+}
+let pipeById = {};
+
 function restyle() {
-  if (!pipes.length || !pipes[0].sol) return;
+  if (!pipes.length || pipes.some(p => !p.sol)) return; // wait until every pipe is solved
+  renderFilter(); applyFilter();
   pipes.forEach(p => p.layer.setStyle({ color: pipeColor(p), weight: 1.5 + p.props.diameter_mm / 250, opacity: selected === p ? 1 : 0.9 }));
   if (selected) selected.layer.setStyle({ weight: 7 });
   if (scene3d) { scene3d.recolor(Object.fromEntries(pipes.map(p => [p.props.id, pipeColor(p)]))); scene3d.select(selected?.props.id); }
@@ -238,6 +257,7 @@ function renderSelection(p) {
     <section>
       <h3>Advice</h3>
       <p class="when">${whenTxt}</p>
+      <p class="threshold">${thresholdTxt(pr, s)}</p>
       <div class="why">${whyText(pr, s, t)}</div>
     </section>
     <section>
@@ -254,13 +274,19 @@ function renderSelection(p) {
       </dl>
     </section>
     <details>
-      <summary>Model detail: lifetime cost per option and advice per class</summary>
+      <summary>Model detail: lifetime cost per option</summary>
       <table><thead><tr><th>Option</th><th>Lifetime integrated cost</th></tr></thead><tbody>${rows}</tbody></table>
-      <div class="policy" style="margin-top:8px">${s.policy.map((a, i) => `<div class="${a} ${i + 1 === pr.cond ? 'cur' : ''}" title="${a}">${i + 1}</div>`).join('')}</div>
-      <p class="note">Lifetime = expected discounted FV+SV+EV+risk with the best policy afterwards. Squares: advice per condition class 1–6, outlined = current.</p>
+      <p class="note">Lifetime = expected discounted FV + SV + EV + risk, following the best choice in later years too.</p>
     </details>`;
   $('pipeCard').hidden = false;
   $('cardClose').onclick = () => { $('pipeCard').hidden = true; selected = null; restyle(); };
+}
+
+// The condition class is an input; this states at which class this particular pipe tips from waiting to acting.
+function thresholdTxt(pr, s) {
+  const k = s.policy.findIndex(a => a !== 'defer');
+  if (k < 0) return `For this pipe, waiting stays cheapest at every condition class. Currently class ${pr.cond}.`;
+  return `This pipe needs action from <b>class ${k + 1}</b> (${s.policy[k]}${s.policy.slice(k).some(a => a !== s.policy[k]) ? `, ${s.policy.slice(k).find(a => a !== s.policy[k])} at worse classes` : ''}). Currently <b>class ${pr.cond}</b>.`;
 }
 
 function whyText(pr, s, t) {
@@ -310,6 +336,7 @@ async function main() {
     p.layer.on('click', () => selectPipe(p));
     return p;
   });
+  pipeById = Object.fromEntries(pipes.map(p => [p.props.id, p]));
 
   const pop = (f, keys) => keys.map(k => f.properties[k] ? `<b>${k}</b>: ${f.properties[k]}` : '').filter(Boolean).join('<br>');
   const manholeLayer = L.geoJSON(manholes, { pointToLayer: (f, ll) => L.circleMarker(ll, { renderer, radius: 2, color: '#56656f', weight: 1, fillOpacity: .6 }) })

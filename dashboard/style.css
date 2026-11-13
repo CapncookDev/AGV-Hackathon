@@ -116,3 +116,14 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 table.assume td { text-align: left; vertical-align: top; font-size: 11.5px; padding: 6px 4px; }
 table.assume td:first-child { font-weight: 600; white-space: nowrap; }
 #assumptions h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-top: 6px; }
+
+.filter-bar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; gap: 6px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 5px 8px; box-shadow: var(--shadow); }
+.filter-bar .lbl { font: 700 10.5px var(--font); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-right: 2px; }
+.chip { font: 600 12px var(--font); text-transform: capitalize; border-radius: 999px; padding: 4px 10px; cursor: pointer; border: 1.5px solid currentColor; background: var(--surface); opacity: .45; }
+.chip b { font-weight: 800; margin-left: 2px; }
+.chip.on { opacity: 1; color: #fff !important; }
+.chip.defer { color: var(--defer); } .chip.reline { color: var(--reline); } .chip.replace { color: var(--replace); }
+.chip.defer.on { background: var(--defer); border-color: var(--defer); } .chip.reline.on { background: var(--reline); border-color: var(--reline); } .chip.replace.on { background: var(--replace); border-color: var(--replace); }
+.pipe-card .threshold { margin: 0; font-size: 13px; color: var(--muted); }
+@media (max-width: 700px) { .filter-bar { top: 52px; left: 12px; transform: none; } }
