@@ -9,11 +9,11 @@ export const MODELS = {
   station: { url: 'data/station.ifc', title: 'Pumping station Jan de Jonghstraat', size: '25 MB',
     intro: n => `<b>Eindgemaal Jan de Jonghstraat</b> · IFC 4.3 from the organisers · ${n} elements. Click an element to see its Maximo asset code and W-OTL identifier.`,
     psets: /maximo|otl|Environmental/i, view: [0.9, 0.7, 0.9] },
-  sewer: { url: 'data/sewer_x4.ifc', title: 'Sewer network in 3D (pipes drawn ×4 thicker)', size: '8 MB', advice: true,
-    intro: n => `<b>Sewer network</b> · IFC 4.3 generated from the GIS graph · ${n} elements at real depth (m NAP), <b>pipes drawn 4× thicker</b> for readability. Colours: <span style="color:#4f7a5e">■ defer</span> <span style="color:#c4840a">■ reline</span> <span style="color:#b0432d">■ replace</span>; grey = manholes. Click a pipe for its condition, advice and integrated value.`,
+  sewer: { url: 'data/sewer_x4.ifc', title: 'Sewer network in 3D (pipes drawn ×4 thicker)', size: '11 MB', advice: true,
+    intro: n => `<b>Sewer network</b> · IFC 4.3 generated from the GIS graph · ${n} elements at real depth (m NAP), <b>pipes drawn 4× thicker</b> for readability. Colours: <span style="color:#4f7a5e">■ defer</span> <span style="color:#c4840a">■ reline</span> <span style="color:#b0432d">■ replace</span>; grey = manholes. Soil layers from TNO GeoTOP (IfcGeotechnicalStratum): <span style="color:#73502e">■ peat</span> <span style="color:#7a8c6b">■ clay</span> <span style="color:#e6c35f">■ sand</span> <span style="color:#bdbab3">■ made ground</span>. Click a pipe or a soil layer.`,
     psets: /AGV_/i, view: [0.25, 0.35, 0.45] },
-  sewerTrue: { url: 'data/sewer.ifc', title: 'Sewer network in 3D (true size)', size: '8 MB', advice: true,
-    intro: n => `<b>Sewer network</b> · IFC 4.3 generated from the GIS graph · ${n} elements at real depth (m NAP). Pipes coloured by advice: <span style="color:#4f7a5e">■ defer</span> <span style="color:#c4840a">■ reline</span> <span style="color:#b0432d">■ replace</span>; grey cylinders are manholes. Click a pipe for its condition, advice and integrated value.`,
+  sewerTrue: { url: 'data/sewer.ifc', title: 'Sewer network in 3D (true size)', size: '11 MB', advice: true,
+    intro: n => `<b>Sewer network</b> · IFC 4.3 generated from the GIS graph · ${n} elements at real depth (m NAP). Pipes coloured by advice: <span style="color:#4f7a5e">■ defer</span> <span style="color:#c4840a">■ reline</span> <span style="color:#b0432d">■ replace</span>; grey cylinders are manholes. Soil layers from TNO GeoTOP (IfcGeotechnicalStratum). Click a pipe or a soil layer.`,
     psets: /AGV_/i, view: [0.25, 0.35, 0.45] },
 };
 
@@ -69,7 +69,8 @@ export async function showModel(container, info, key = 'station') {
           const ox = r * Math.cos(a * Math.PI / 4), oy = r * Math.sin(a * Math.PI / 4);
           mouse.set(((e.clientX + ox - rect.left) / rect.width) * 2 - 1, -((e.clientY + oy - rect.top) / rect.height) * 2 + 1);
           ray.setFromCamera(mouse, viewer.camera);
-          hit = ray.intersectObjects(g.group.children, false)[0];
+          const hits = ray.intersectObjects(g.group.children.filter(m => m.visible), false);
+          hit = hits.find(h => !h.object.userData.soil) || (r === 0 ? hits[0] : null); // pipes win over soil layers
           if (hit) break outer;
         }
       }
@@ -95,6 +96,13 @@ export async function showModel(container, info, key = 'station') {
       const colourOf = cfg.advice ? adviceColours(api, modelID) : null;
       const { group, count } = buildGroup(api, modelID, colourOf);
       viewer.scene.add(group);
+      const soil = cfg.advice ? soilIds(api, modelID) : new Map();
+      const soilMats = {};
+      group.children.forEach(m => {
+        const name = soil.get(m.userData.expressID);
+        if (name !== undefined) { m.userData.soil = true; m.material = (soilMats[name] ||= soilMaterial(name)); m.renderOrder = 1; }
+        else if (cfg.advice) m.renderOrder = 0;
+      });
       viewer.groups[key] = { group, modelID, intro: cfg.intro(count.toLocaleString('en-US')), box: new THREE.Box3().setFromObject(group) };
     })();
     await viewer.loading[key];
@@ -127,7 +135,26 @@ function adviceColours(api, modelID) {
     const a = /advice: (\w+)/.exec(line.Description?.value || '')?.[1];
     if (a) map.set(ids.get(i), ADVICE_RGB[a]);
   }
-  return id => map.get(id) ?? 0x9aa3a8;
+  return id => map.get(id) ?? null; // manholes and soil layers keep their IFC colour
+}
+
+// soil layers: expressID -> lithoclass name (IfcGeotechnicalStratum.Name)
+function soilIds(api, modelID) {
+  const map = new Map();
+  if (WebIFC.IFCGEOTECHNICALSTRATUM === undefined) return map;
+  const ids = api.GetLineIDsWithType(modelID, WebIFC.IFCGEOTECHNICALSTRATUM);
+  for (let i = 0; i < ids.size(); i++) map.set(ids.get(i), api.GetLine(modelID, ids.get(i)).Name?.value || '');
+  return map;
+}
+// web-ifc does not pass IFC transparency through, so set it here per lithoclass
+const SOIL_LOOK = { 'made ground (fill)': [0xcfcbc3, 0.05], peat: [0x73502e, 0.55], clay: [0x7a8c6b, 0.35], 'clayey sand / loam': [0x9e996f, 0.3] };
+const soilMaterial = name => {
+  const [col, op] = SOIL_LOOK[name] || [0xe6c35f, 0.22]; // sands and the rest
+  return new THREE.MeshLambertMaterial({ color: col, transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide });
+};
+
+export function setSoil(on) {
+  Object.values(viewer?.groups || {}).forEach(g => g.group.children.forEach(m => { if (m.userData.soil) m.visible = on; }));
 }
 
 function buildGroup(api, modelID, colourOf) {
@@ -155,7 +182,7 @@ function buildGroup(api, modelID, colourOf) {
       if (!materials.has(key)) {
         materials.set(key, hex != null
           ? new THREE.MeshLambertMaterial({ color: hex, side: THREE.DoubleSide })
-          : new THREE.MeshLambertMaterial({ color: new THREE.Color(c.x, c.y, c.z), transparent: c.w < 1, opacity: c.w, side: THREE.DoubleSide }));
+          : new THREE.MeshLambertMaterial({ color: new THREE.Color(c.x, c.y, c.z), transparent: c.w < 1, opacity: c.w, depthWrite: c.w >= 1, side: THREE.DoubleSide }));
       }
       const mesh = new THREE.Mesh(geom, materials.get(key));
       mesh.matrixAutoUpdate = false;

@@ -25,6 +25,14 @@ OUT = ROOT / "dashboard/data/sewer.ifc"
 
 COLOURS = {"defer": (0.31, 0.48, 0.37), "reline": (0.77, 0.52, 0.04), "replace": (0.69, 0.26, 0.18)}
 MANHOLE_COLOUR = (0.62, 0.64, 0.66)
+RAW = ROOT / "data/raw"
+# GeoTOP lithoclasses: colour (rgb) and transparency for the soil layers (IfcGeotechnicalStratum)
+LITHO = {
+    0: ("made ground (fill)", (0.80, 0.79, 0.76), 0.95), 1: ("peat", (0.45, 0.30, 0.18), 0.45),
+    2: ("clay", (0.48, 0.55, 0.42), 0.55), 3: ("clayey sand / loam", (0.62, 0.60, 0.45), 0.6),
+    5: ("fine sand", (0.93, 0.82, 0.50), 0.7), 6: ("medium sand", (0.90, 0.76, 0.38), 0.7),
+    7: ("coarse sand", (0.85, 0.68, 0.30), 0.7), 8: ("gravel", (0.65, 0.62, 0.58), 0.7), 9: ("shells", (0.95, 0.93, 0.88), 0.7),
+}
 WALL = {"concrete": 0.12, "PVC": 0.035, "stoneware": 0.1, "asbestos cement": 0.08, "cast iron": 0.04, "PE": 0.06}
 
 
@@ -186,6 +194,14 @@ def main(scale=1.0, out=OUT):
         api("pset.edit_pset", m, pset=ps, properties={
             "ConditionClass": p["cond"], "ConditionSource": "synthetic – Markov ageing from build year",
             "ScaleNote": "1 very good … 6 end of life (organisers' UC4 scale)"})
+        if "settle" in p:
+            ps = api("pset.add_pset", m, product=el, name="AGV_Soil")
+            api("pset.edit_pset", m, pset=ps, properties={
+                "SoilAtPipe": p.get("soil_at_pipe", "unknown"), "PeatBelowPipe_m": p.get("peat_m", 0.0),
+                "ClayBelowPipe_m": p.get("clay_m", 0.0), "SettlementRisk": p.get("settle", "unknown"),
+                "ExpectedLifeUsed_yr": p.get("life", 0), "LifeMultiplier": p.get("life_mult", 1.0),
+                "ReplaceDigSurcharge": p.get("dig_surcharge", 0.0),
+                "Source": "TNO GeoTOP v1.6 lithology; peat + clay down to the first sand layer; effects are assumptions"})
         ps = api("pset.add_pset", m, product=el, name="AGV_Decision")
         api("pset.edit_pset", m, pset=ps, properties={
             "Advice": d["action"], "IntegratedValueOfActingNow_EUR": d.get("iv_now", 0),
@@ -220,6 +236,50 @@ def main(scale=1.0, out=OUT):
         api("pset.edit_pset", m, pset=ps, properties={
             "GIS_URI": node_id if not node_id.startswith("end:") else "none (pipe end without node in GIS)",
             "GroundLevel_mNAP": round(ground, 3) if ground is not None else "unknown", "BottomLevel_mNAP": round(bottom, 3)})
+
+    # soil layers: GeoTOP voxel columns under the network, merged per run of the same lithoclass
+    geo_path = RAW / "geotop.json"
+    if geo_path.exists():
+        geo = json.loads(geo_path.read_text())
+        zs = geo["z"]
+        x_min, x_max, y_min, y_max = min(xs) - 60, max(xs) + 60, min(ys) - 60, max(ys) + 60
+        litho_styles = {}
+        for code, (name, rgb, tr) in LITHO.items():
+            colour = m.createIfcColourRgb(None, *rgb)
+            litho_styles[code] = m.createIfcSurfaceStyle(name, "BOTH", [m.createIfcSurfaceStyleShading(colour, tr)])
+        geomodel = m.create_entity("IfcGeomodel", GlobalId=ifcopenshell.guid.new(), Name="GeoTOP subsurface model",
+                                   Description="TNO GeoTOP v1.6, 100 x 100 x 0.5 m voxels, merged per lithoclass run")
+        geomodel.ObjectPlacement = placement()
+        strata = []
+        for key, col in geo["lithok"].items():
+            cx, cy = map(float, key.split(","))
+            if not (x_min <= cx <= x_max and y_min <= cy <= y_max):
+                continue
+            k = 0
+            while k < len(col):
+                code = col[k]
+                k2 = k
+                while k2 + 1 < len(col) and col[k2 + 1] == code:
+                    k2 += 1
+                if code in LITHO:
+                    z_bot, z_top = zs[k] - 0.25, zs[k2] + 0.25
+                    prof = m.createIfcRectangleProfileDef("AREA", None, None, 100.0, 100.0)
+                    pos = m.createIfcAxis2Placement3D(m.createIfcCartesianPoint((cx - x0, cy - y0, z_bot)))
+                    solid = m.createIfcExtrudedAreaSolid(prof, pos, z_axis, z_top - z_bot)
+                    m.createIfcStyledItem(solid, [litho_styles[code]], None)
+                    st = m.create_entity("IfcGeotechnicalStratum", GlobalId=ifcopenshell.guid.new(),
+                                         Name=LITHO[code][0], PredefinedType="SOLID")
+                    st.ObjectPlacement = placement()
+                    st.Representation = shape([solid])
+                    ps = api("pset.add_pset", m, product=st, name="AGV_GeoTOP")
+                    api("pset.edit_pset", m, pset=ps, properties={
+                        "Lithoclass": LITHO[code][0], "LithoclassCode": code, "TopLevel_mNAP": round(z_top, 2),
+                        "BottomLevel_mNAP": round(z_bot, 2), "CellCentre_RD": key, "Source": "TNO GeoTOP v1.6 (dinodata.nl)"})
+                    strata.append(st)
+                k = k2 + 1
+        api("aggregate.assign_object", m, relating_object=geomodel, products=strata)
+        products.append(geomodel)
+        print(f"soil: {len(strata)} geotechnical strata from GeoTOP")
 
     api("spatial.assign_container", m, relating_structure=site, products=products)
     m.write(str(out))

@@ -343,6 +343,7 @@ async function openBim(key = 'station') {
   const isSewer = key.startsWith('sewer');
   $('bimTitle').textContent = isSewer ? 'Sewer network in 3D (IFC)' : 'Pumping station (IFC)';
   $('bimScale').hidden = !isSewer;
+  $('soilToggle').hidden = !isSewer;
   document.querySelectorAll('#bimScale button').forEach(b => {
     b.classList.toggle('on', b.dataset.key === key);
     b.onclick = () => openBim(b.dataset.key);
@@ -398,6 +399,8 @@ async function main() {
   });
   stationLayer.on('click', () => openBim('station'));
   $('openStation').onclick = e => { e.preventDefault(); openBim('station'); };
+  $('openNetwork').onclick = e => { e.preventDefault(); openBim('sewer'); };
+  $('soilOn').onchange = async e => { (await import('./bim.js')).setSoil(e.target.checked); };
 
   pipeLayer.addTo(map); stationLayer.addTo(map); stadLayer.addTo(map); ndwLayer.addTo(map);
   L.control.layers({ 'Map (PDOK)': base, 'Aerial (PDOK)': aerial }, {

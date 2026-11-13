@@ -130,3 +130,5 @@ table.assume td:first-child { font-weight: 600; white-space: nowrap; }
 
 .limits h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-top: 4px; }
 .limits { display: grid; gap: 8px; }
+
+.soil-toggle { font-size: 12px; display: inline-flex; gap: 6px; align-items: center; color: var(--fg); margin-left: auto; margin-right: 8px; }

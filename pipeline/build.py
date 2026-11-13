@@ -435,7 +435,8 @@ def main():
         rd_rows.append({"id": props["id"], "guid": p["uri"].split("/")[-1], "kind": props["kind"], "pts": pts,
                         "bob_b": p["bob_b"], "bob_e": p["bob_e"], "ground": (sum(grounds) / len(grounds)) if grounds else None,
                         "diameter_mm": props["diameter_mm"], "material": mat, "material_raw": p["mat_raw"],
-                        "year": p["year"], "cond": cond, "b": p["b"], "e": p["e"]})
+                        "year": p["year"], "cond": cond, "b": p["b"], "e": p["e"],
+                        "life": life, "life_mult": life_mult, "dig_surcharge": dig_surcharge, **soil})
 
     def dump(name, feats):
         (OUT / name).write_text(json.dumps({"type": "FeatureCollection", "features": feats}, separators=(",", ":")))

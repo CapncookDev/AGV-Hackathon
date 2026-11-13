@@ -57,7 +57,7 @@
         </select>
       </label>
       <div class="legend" id="legend"></div>
-      <p class="note">BIM: <a href="data/sewer.ifc" download>sewer network IFC 4.3 (true size)</a> · <a href="data/sewer_x4.ifc" download>pipes ×4</a> · <a href="#" id="openStation">pumping station model</a></p>
+      <p class="note">BIM: <a href="data/sewer.ifc" download>sewer network IFC 4.3 (true size)</a> · <a href="data/sewer_x4.ifc" download>pipes ×4</a> · <a href="#" id="openStation">pumping station model</a> · <a href="#" id="openNetwork">network IFC with soil layers</a></p>
     </details>
     <details class="panel" id="limitsPanel">
       <summary><h2>Limitations</h2></summary>
@@ -99,6 +99,7 @@
       <div class="seg" id="bimScale" hidden>
         <button type="button" data-key="sewer" class="on">Pipes ×4</button><button type="button" data-key="sewerTrue">True size</button>
       </div>
+      <label class="soil-toggle" id="soilToggle" hidden><input type="checkbox" id="soilOn" checked> Soil layers (GeoTOP)</label>
       <button id="bimClose" type="button">Close</button>
     </div>
     <div id="bimView"></div>
