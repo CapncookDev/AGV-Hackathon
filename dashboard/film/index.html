@@ -50,7 +50,7 @@
 <div class="layer" id="statWrap"><div id="stat"></div></div>
 <div class="layer" id="end">
   <div class="logos"><img src="../pitch/img/agv-logo.svg" alt="Waterschap Amstel, Gooi en Vecht"><img src="../pitch/img/waternet-logo.svg" alt="Waternet"></div>
-  <h1>Which pipe to dig, which to line, and what it costs the climate.</h1>
+  <h1>Which pipe to dig, which to reline, and what it costs the climate.</h1>
   <div><div class="url">capncookdev.github.io/AGV-Hackathon</div><div class="fine">Hack the Water Graph · Use Case 4 · hackathon prototype</div></div>
 </div>
 <div class="cap" id="cap"></div>
@@ -73,6 +73,12 @@ for (let j = 0; j < ROWS; j++) for (let i = 0; i < COLS; i++) {
   im.src = `https://service.pdok.nl/hwh/luchtfotorgb/wmts/v1_0/Actueel_orthoHR/EPSG:3857/${Z}/${x0 + i}/${y0 + j}.jpeg`;
   im.style.left = i * 256 + 'px'; im.style.top = j * 256 + 'px';
   tiles.appendChild(im); imgs.push(im);
+}
+
+// ?overlay: transparent page without the AI clip, so ffmpeg can lay the captions over the clips
+if (new URLSearchParams(location.search).has('overlay')) {
+  document.documentElement.style.background = document.body.style.background = 'transparent';
+  document.getElementById('clip').style.display = 'none';
 }
 
 // ---------- timeline ----------
@@ -117,7 +123,8 @@ window.render = async function (t) {
   $('clip').style.opacity = isAI ? 1 : 0; $('clipShade').style.opacity = isAI ? 1 : 0;
   if (isAI) {
     const start = SCENES.find(s => s[0] === name)[1], v = $('clip');
-    const target = Math.min((t - start) * 5 / 6, v.duration - 0.05);
+    const use = { ai1: 7.5, ai2: 8, ai3: 8 }[name]; // seconds of each 10 s clip to play in its 6 s shot
+    const target = Math.min((t - start) / 6 * use, v.duration - 0.05);
     if (Math.abs(v.currentTime - target) > 0.001) { v.currentTime = target; await new Promise(r => { v.onseeked = r; }); }
   }
   const aerialOn = name === 'aerial' || name === 'stats';
@@ -131,7 +138,7 @@ window.render = async function (t) {
     caption('<div class="eyebrow">AGV · Waternet · Bos en Lommer, Amsterdam</div><div class="head">40 km of sewer under one neighbourhood.</div>');
     cap.style.opacity = fade(t, 0.6, 5.7);
   } else if (name === 'ai2') {
-    caption('<div class="eyebrow">Every pipe, sooner or later</div><div class="head">Dig, line, or wait?</div><div class="chips"><span class="chip d">Defer</span><span class="chip r">Reline</span><span class="chip x">Replace</span></div>');
+    caption('<div class="eyebrow">Every pipe, sooner or later</div><div class="head">Dig, reline, or wait?</div><div class="chips"><span class="chip d">Defer</span><span class="chip r">Reline</span><span class="chip x">Replace</span></div>');
     cap.style.opacity = fade(t, 6.4, 11.7);
   } else if (name === 'ai3') {
     caption('<div class="eyebrow">The timing problem</div><div class="head">Too late: it fails.<br>Too early: money and carbon wasted.</div>');
@@ -161,7 +168,7 @@ window.render = async function (t) {
     const s = $('stat');
     if (t < 46) s.innerHTML = `<div class="tag">Act now, by the model</div><div class="num">${count(t, 42.3, 1.6, 594)}</div><div class="sub"><span style="color:var(--reline)">153 reline</span> · <span style="color:var(--replace)">441 replace</span></div><div class="note">of 1,804 sewer sections; the rest can safely wait</div>`;
     else if (t < 49.5) s.innerHTML = `<div class="tag">What it takes</div><div class="num">€${(6.4 * ease((t - 46.2) / 1.4)).toFixed(1)}M</div><div class="sub">${count(t, 46.2, 1.4, 991)} t CO₂e, priced in</div><div class="note">disruption and trees counted next to cost</div>`;
-    else s.innerHTML = `<div class="tag">What it changes</div><div class="num small">Pricing carbon favours replacing, not relining.</div><div class="note">A new pipe emits less per year of service than a liner.</div>`;
+    else s.innerHTML = `<div class="tag">What it changes</div><div class="num small">Every advice with its why, and its carbon.</div><div class="note">Cost, disruption and CO₂ side by side, for every pipe.</div>`;
     $('statWrap').style.opacity = t < 46 ? fade(t, 42, 45.8, 0.4) : t < 49.5 ? fade(t, 46, 49.3, 0.3) : fade(t, 49.5, 51.8, 0.3);
   } else {
     cap.style.opacity = 0;

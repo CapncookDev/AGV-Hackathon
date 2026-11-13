@@ -7,13 +7,13 @@ set -a; source .env; set +a
 OUT=dashboard/film/clips; mkdir -p "$OUT"
 LINES=(
   "Under one Amsterdam neighbourhood run forty kilometres of sewer."
-  "Every pipe, sooner or later, needs a choice: dig it up, line it, or wait."
+  "Every pipe, sooner or later, needs a choice: dig it up, reline it, or wait."
   "Wait too long, and it fails. Act too early, and you waste money, and carbon."
   "So we built the neighbourhood as one model. Every pipe, every tree, every building, and the real soil underneath."
   "Straight from Waternet's knowledge graph: eighteen hundred sewer sections, one advice each."
   "For every pipe we weigh cost, disruption and carbon, all in euros, against the risk of waiting."
-  "Five hundred ninety-four pipes are worth acting on now. And a surprise: pricing carbon doesn't favour relining. It favours replacing."
-  "Which pipe to dig, which to line, and what it costs the climate."
+  "Five hundred ninety-four pipes are worth acting on now. Each one with its cost, its disruption and its carbon on the table."
+  "Which pipe to dig, which to reline, and what it costs the climate."
 )
 for i in "${!LINES[@]}"; do
   n=$((i+1))
