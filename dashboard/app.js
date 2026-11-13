@@ -163,7 +163,7 @@ async function setView(view) {
 }
 document.querySelectorAll('#viewSwitch button').forEach(b => { b.onclick = () => setView(b.dataset.view); });
 $('seeThrough').onchange = e => scene3d?.setGround(e.target.checked);
-['buildings', 'trees', 'manholes'].forEach(k => { $('show-' + k).onchange = e => scene3d?.show(k, e.target.checked); });
+['buildings', 'trees', 'manholes', 'soil'].forEach(k => { $('show-' + k).onchange = e => scene3d?.show(k, e.target.checked); });
 
 function renderLegend() {
   const by = $('colorBy').value, c = COLORS();

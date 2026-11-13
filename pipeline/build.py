@@ -557,8 +557,29 @@ def build_scene(rd_rows, nodes):
             bottoms[n] = min(bottoms.get(n, 99), z)
     manholes = [[*loc(*nodes[n]["xy"]), round((nodes[n]["ground"] if nodes[n]["ground"] is not None else g0) - g0, 2), round(z - g0, 2)]
                 for n, z in bottoms.items() if n in nodes]
+    # GeoTOP strata: per 100 m column inside the island, runs of the same lithoclass (relative to ground ref g0)
+    strata = []
+    geo = load_geotop()
+    if geo is not None:
+        zs = geo["z"]
+        for key, col in geo["lithok"].items():
+            cx, cy = map(float, key.split(","))
+            rx0, rx1, ry0, ry1 = max(cx - 50, bx0), min(cx + 50, bx1), max(cy - 50, by0), min(cy + 50, by1)
+            if rx0 >= rx1 or ry0 >= ry1:
+                continue
+            perim = int(rx0 <= bx0 or rx1 >= bx1 or ry0 <= by0 or ry1 >= by1)
+            k = 0
+            while k < len(col):
+                k2 = k
+                while k2 + 1 < len(col) and col[k2 + 1] == col[k]:
+                    k2 += 1
+                code, zb, zt = col[k], zs[k] - 0.25, zs[k2] + 0.25
+                if code >= 0 and zt > -9.0:
+                    strata.append([*loc(rx0, ry0), *loc(rx1, ry1), round(max(zb, -9.0) - g0, 2), round(zt - g0, 2), code, perim])
+                k = k2 + 1
     st = nodes.get(PUMPING_STATION_URI)
-    scene = {"origin": [ox, oy], "ground_nap": g0, "bounds": [round(bx0 - ox), round(by0 - oy), round(bx1 - ox), round(by1 - oy)],
+    scene = {
+             "strata": strata,"origin": [ox, oy], "ground_nap": g0, "bounds": [round(bx0 - ox), round(by0 - oy), round(bx1 - ox), round(by1 - oy)],
              "buildings": buildings, "surface": surf, "trees": trees, "pipes": pipes, "manholes": manholes,
              "station": loc(*st["xy"]) if st else None,
              "min_z": round(min(z for pts in pipes.values() for *_, z in pts), 2)}

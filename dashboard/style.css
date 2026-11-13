@@ -132,3 +132,6 @@ table.assume td:first-child { font-weight: 600; white-space: nowrap; }
 .limits { display: grid; gap: 8px; }
 
 .soil-toggle { font-size: 12px; display: inline-flex; gap: 6px; align-items: center; color: var(--fg); margin-left: auto; margin-right: 8px; }
+
+.soil-legend { display: inline-flex; gap: 4px 8px; flex-wrap: wrap; align-items: center; color: var(--muted); }
+.soil-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--c); margin-right: 2px; }

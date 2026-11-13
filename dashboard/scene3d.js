@@ -16,7 +16,8 @@ export async function initScene(container, { onPick, onStation, diameters }) {
   const data = await (await fetch('data/scene.json', { cache: 'no-cache' })).json();
   const [bx0, by0, bx1, by1] = data.bounds;
   const W = bx1 - bx0, D = by1 - by0;
-  const bottom = data.min_z * DEPTH_EXAG - 8;
+  const strataData = data.strata || [];
+  const bottom = strataData.length ? Math.min(...strataData.map(r => r[4])) * DEPTH_EXAG : data.min_z * DEPTH_EXAG - 8;
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
@@ -37,10 +38,33 @@ export async function initScene(container, { onPick, onStation, diameters }) {
   const soil = new THREE.MeshLambertMaterial({ color: 0xc9c1b3 });
   const soilDark = new THREE.MeshLambertMaterial({ color: 0xa79f92 });
   const top = new THREE.MeshLambertMaterial({ color: 0xdedbd4, transparent: true, opacity: 0.3, depthWrite: false });
-  const block = new THREE.Mesh(new THREE.BoxGeometry(W, -bottom, D), [soil, soil, top, soilDark, soil, soil]);
+  // with GeoTOP strata the soil layers form the sides; the block keeps only its see-through top
+  const hidden = new THREE.MeshBasicMaterial({ visible: false });
+  const sides = strataData.length ? [hidden, hidden, top, hidden, hidden, hidden] : [soil, soil, top, soilDark, soil, soil];
+  const block = new THREE.Mesh(new THREE.BoxGeometry(W, -bottom, D), sides);
   block.position.set((bx0 + bx1) / 2, bottom / 2, -(by0 + by1) / 2);
   block.renderOrder = 2;
   scene.add(block);
+
+  // GeoTOP soil layers (TNO): peat, clay and sand as solid layers under the network;
+  // made ground (the fill the pipes lie in) only along the edges and see-through, so the pipes stay visible
+  const SOIL_COL = { 0: 0xd9d3c7, 1: 0x6b4a2b, 2: 0x7f8f6c, 3: 0xa39d72, 5: 0xe0c779, 6: 0xd8b65a, 7: 0xcfa64a, 8: 0xa39f97, 9: 0xefe9dc };
+  const soilMeshes = [];
+  const addStrata = (rows, material) => {
+    if (!rows.length) return;
+    const mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), material, rows.length);
+    const mm = new THREE.Matrix4(), qq = new THREE.Quaternion(), pp = new THREE.Vector3(), ss = new THREE.Vector3();
+    rows.forEach(([x0, y0, x1, y1, zb, zt, code], i) => {
+      const top_ = Math.min(zt, 0) * DEPTH_EXAG, bot = zb * DEPTH_EXAG;
+      mm.compose(pp.set((x0 + x1) / 2, (top_ + bot) / 2, -(y0 + y1) / 2), qq.identity(), ss.set(x1 - x0, Math.max(0.01, top_ - bot), y1 - y0));
+      mesh.setMatrixAt(i, mm);
+      mesh.setColorAt(i, new THREE.Color(SOIL_COL[code] ?? 0xcccccc));
+    });
+    scene.add(mesh); soilMeshes.push(mesh);
+  };
+  addStrata(strataData.filter(r => r[6] !== 0 && Math.min(r[5], 0) > r[4]), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+  addStrata(strataData.filter(r => r[6] === 0 && r[7] && Math.min(r[5], 0) > r[4]),
+    new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false }));
 
   // surface layers
   const flat = (rings, y) => {
@@ -126,7 +150,7 @@ export async function initScene(container, { onPick, onStation, diameters }) {
 
   // camera: three-quarter view of the island
   const R = Math.max(W, D);
-  camera.position.set(-R * 0.75, R * 0.62, R * 1.0);
+  camera.position.set(-R * 0.8, R * 0.42, R * 1.05); // low enough to see the soil layers on the sides
   controls.target.set(0, bottom * 0.3, 0);
   controls.update();
 
@@ -175,7 +199,10 @@ export async function initScene(container, { onPick, onStation, diameters }) {
       pipeMesh.material.depthTest = !seeThrough; pipeMesh.material.needsUpdate = true;
       surfaces.forEach(m => { m.material.opacity = m.userData.opacity * (seeThrough ? 0.45 : 1); });
     },
-    show(layer, on) { ({ buildings, trees: treeMesh, manholes: mh })[layer].visible = on; },
+    show(layer, on) {
+      if (layer === 'soil') { soilMeshes.forEach(m => { m.visible = on; }); return; }
+      ({ buildings, trees: treeMesh, manholes: mh })[layer].visible = on;
+    },
     // hide pipes whose id fails the filter (zero-scale instances are not drawn and not pickable)
     filter(keep) {
       if (!S._orig) S._orig = Array.from({ length: segs.length }, (_, i) => { const m = new THREE.Matrix4(); pipeMesh.getMatrixAt(i, m); return m; });
