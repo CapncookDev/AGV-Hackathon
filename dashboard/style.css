@@ -144,3 +144,22 @@ table.rank tr[data-id]:hover td { background: var(--accent-soft); }
 table.rank tr.over td { opacity: .45; }
 table.rank .badge { font-size: 10px; padding: 1px 6px; }
 .mono { font-family: var(--mono); }
+
+.top-actions { display: flex; gap: 8px; align-items: center; }
+.top-actions .ghost { font: 600 13px var(--font); color: var(--accent); text-decoration: none; padding: 8px 10px; }
+.tour { position: fixed; inset: 0; z-index: 3000; pointer-events: none; }
+.tour-spot { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(27, 36, 48, .55); outline: 3px solid var(--accent); transition: all .25s ease; pointer-events: none; }
+.tour-card { position: fixed; width: min(360px, calc(100vw - 32px)); background: var(--surface); border-radius: 16px; padding: 18px 20px; box-shadow: 0 20px 50px rgba(27,36,48,.3); pointer-events: auto; display: grid; gap: 8px; transition: left .25s ease, top .25s ease; }
+.tour-card h3 { font-size: 18px; font-weight: 800; }
+.tour-card p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.5; }
+.tour-card b.d { color: var(--defer); } .tour-card b.r { color: var(--reline); } .tour-card b.x { color: var(--replace); }
+.tour-step { font: 700 11px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.tour-nav { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 4px; }
+.tour-nav button, .tour-nav a { font: 600 13px var(--font); padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; text-decoration: none; }
+.tour-nav .tour-next { background: var(--accent); border-color: var(--accent); color: #fff; }
+.tour-nav .tour-skip { border: 0; color: var(--muted); padding-left: 0; }
+.tour-nav button:disabled { opacity: .4; cursor: default; }
+.tour-dots { display: flex; gap: 4px; }
+.tour-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+.tour-dots i.on { background: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .tour-spot, .tour-card { transition: none; } }
