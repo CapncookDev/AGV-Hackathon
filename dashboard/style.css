@@ -154,8 +154,9 @@ table.rank .badge { font-size: 10px; padding: 1px 6px; }
 .tour-card p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.5; }
 .tour-card b.d { color: var(--defer); } .tour-card b.r { color: var(--reline); } .tour-card b.x { color: var(--replace); }
 .tour-step { font: 700 11px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
-.tour-nav { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 4px; }
-.tour-nav button, .tour-nav a { font: 600 13px var(--font); padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; text-decoration: none; }
+.tour-nav { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin-top: 4px; }
+.tour-nav > span:last-child { display: flex; gap: 6px; flex-shrink: 0; margin-left: auto; }
+.tour-nav button, .tour-nav a { display: inline-block; white-space: nowrap; font: 600 13px var(--font); padding: 7px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; text-decoration: none; }
 .tour-nav .tour-next { background: var(--accent); border-color: var(--accent); color: #fff; }
 .tour-nav .tour-skip { border: 0; color: var(--muted); padding-left: 0; }
 .tour-nav button:disabled { opacity: .4; cursor: default; }
