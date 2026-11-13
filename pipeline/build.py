@@ -41,7 +41,7 @@ P_NAME = URIRef(OTL + "e8f4ef80-fffc-3f92-91d9-ae33f0c605d7")
 
 # W-OTL class codes (first 8 chars). Labels are not in the export; names are our reading of the data.
 GRAVITY_PIPES = {"934f048a": "main sewer", "80b1ae03": "sewer (PVC network)"}
-PRESSURE_MAIN = "9f7a4396"
+# Pressure mains (W-OTL 9f7a4396, cast iron) are out of scope: relining them needs pressure-rated liners.
 PUMPING_STATION_URI = "https://wkg.waternet.nl/id/0cdd73d6-a8bc-4afd-a610-3c0d8a61c8f2"
 
 # Material class (from the naakt mapping) -> model material. Expected life in years is an ASSUMPTION.
@@ -211,7 +211,7 @@ def main():
                 node_feats.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": wgs(*pts[0])},
                                    "properties": {"name": str(next(g.objects(s, P_NAME), "")),
                                                   "year": str(next(g.objects(s, P_YEAR), ""))}})
-        elif kind == "LINESTRING" and (tcode in GRAVITY_PIPES or tcode == PRESSURE_MAIN):
+        elif kind == "LINESTRING" and tcode in GRAVITY_PIPES:
             mat_raw = next((material.get(str(o), "") for o in g.objects(s, URIRef(NEN + "consistsOf"))), "")
             pipes_raw.append({
                 "uri": str(s), "tcode": tcode, "pts": pts, "mat_raw": mat_raw,
@@ -334,14 +334,14 @@ def main():
         works.sort(key=lambda w: str(w.get("start")))
         props = {
             "id": p["uri"].split("/")[-1][:8], "uri": p["uri"],
-            "kind": "pressure main" if p["tcode"] == PRESSURE_MAIN else GRAVITY_PIPES[p["tcode"]],
+            "kind": GRAVITY_PIPES[p["tcode"]],
             "material": mat, "material_raw": p["mat_raw"], "life": life,
             "diameter_mm": round(d * 1000), "length_m": round(length, 1), "depth_m": round(depth, 2),
             "year": p["year"], "age": age, "year_flag": year_flag,
             "cond": cond, "cond_synthetic": True,
             "addresses_30m": n_addr, "trees_4m": len(near_trees), "protected_trees_10m": n_prot,
             "planned_works": works[:6],
-            "reline_possible": p["tcode"] != PRESSURE_MAIN,
+            "reline_possible": True,
             **pipe_quantities(d, depth, length, mat),
         }
         pipe_feats.append({"type": "Feature", "geometry": {"type": "LineString", "coordinates": [wgs(*xy) for xy in pts]},
