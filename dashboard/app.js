@@ -20,6 +20,7 @@ const SRC = {
   wior: ['Amsterdam WIOR: sewer works median 14 days (calibration of closure days)', 'https://api.data.amsterdam.nl/v1/wior/'],
   mkba: ['No per-day figure found; check Werkwijzer MKBA milieu §C.6 (overige hinder)', null],
   rioned: ['No official per-metre figure found; replace with Waternet / RIONED cost figures', 'https://www.riool.net'],
+  vmm: ['VMM 2018 “Kosten voor riolering”: 158 sewer projects, dense-urban re-laying €1,619/m, relining ≈ €350/m (2016 prices), indexed +44 % with CBS GWW input price index 2016→2025', 'https://publicaties.vlaanderen.be/view-file/28404'],
   plan: ['Stadsregie programme + NDW planning feed (live)', 'https://opendata.ndw.nu/'],
 };
 const PARAMS = [
@@ -33,10 +34,11 @@ const PARAMS = [
   { key: 'dayBase', label: 'Road closure, per day', unit: eur, status: 'assumption', options: [[250, '€250 per day', 'mkba']] },
   { key: 'dayPerAddr', label: '+ per address within 30 m', unit: eur, status: 'assumption', options: [[10, '€10 per address per day', 'mkba']] },
   { group: 'Work and failure' },
-  { key: 'repMul', label: 'Replace cost (≈ €600 + 2×Ø per m)', unit: v => `${v}×`, status: 'assumption', options: [[1, 'base estimate', 'rioned']] },
-  { key: 'relMul', label: 'Reline cost (≈ €250 + 0.85×Ø per m)', unit: v => `${v}×`, status: 'assumption', options: [[1, 'base estimate', 'rioned']] },
+  { key: 'repMul', label: 'Replace cost (× (€600 + 2×Ø) per m)', unit: v => `${v}×`, status: 'partly', options: [[2.12, 'VMM, indexed · ≈ €2,330/m at Ø250', 'vmm'], [1, 'Original estimate · €1,100/m at Ø250', 'rioned']] },
+  { key: 'relMul', label: 'Reline cost (× (€250 + 0.85×Ø) per m)', unit: v => `${v}×`, status: 'partly', options: [[0.66, 'VMM, indexed · ≈ €305/m at Ø250', 'vmm'], [1, 'Original estimate · €463/m at Ø250', 'rioned']] },
   { key: 'damage', label: 'Damage per failure (Ø300)', unit: eur, status: 'assumption', options: [[20000, '€20,000', 'rioned']] },
-  { key: 'linerLife', label: 'Liner life (class 2 → 6)', unit: v => `${v} yr`, status: 'partly', options: [[25, '25 years', 'slide'], [15, '15 years', 'slide'], [30, '30 years', 'slide']] },
+  { key: 'linerLife', label: 'Liner life, relined at class 1–4', unit: v => `${v} yr`, status: 'partly', options: [[25, '25 years', 'slide'], [20, '20 years', 'slide'], [30, '30 years', 'slide']] },
+  { key: 'linerLifeLate', label: 'Liner life, relined at class 5–6', unit: v => `${v} yr`, status: 'partly', options: [[15, '15 years', 'slide'], [10, '10 years', 'slide'], [20, '20 years', 'slide']] },
   { key: 'coordYears', label: 'Combine with works starting within', unit: v => `${v} yr`, status: 'sourced', options: [[5, '5 years', 'plan'], [0, 'off', 'plan'], [10, '10 years', 'plan']] },
   { check: 'reline6', label: 'Relining possible at class 6', status: 'assumption' },
 ];

@@ -12,10 +12,11 @@ export const DEFAULTS = {
   dayPerAddr: 10,      // € per day per address within 30 m
   treeCost: 3500,      // € per tree within 4 m of a dig (replanting value, NVTB-based; Haarlem 2019 example)
   protTreeCost: 15000, // € per protected tree within 10 m (monumental / special)
-  repMul: 1,           // multiplier on replace cost per metre
-  relMul: 1,           // multiplier on reline cost per metre
+  repMul: 2.12,        // calibrated: VMM 2018 dense-urban re-laying €1,619/m (2016) × CBS GWW +44% ≈ €2,330/m at Ø250
+  relMul: 0.66,        // calibrated: VMM 2018 relining quote €350/m at Ø600 (2016) × CBS GWW +44% ≈ €500/m
   damage: 20000,       // € damage per failure for a Ø300 pipe (scales with diameter)
-  linerLife: 25,       // years a liner lasts from class 2 to class 6
+  linerLife: 25,       // years until class 6 after relining at class 1–4 (organisers' slide: +20–30 yr at class 3–4)
+  linerLifeLate: 15,   // years until class 6 after relining at class 5–6 (organisers' slide: +10–20 yr)
   coord: true,         // combine with planned street works
   coordYears: 5,       // horizon for combining, years
   reline6: false,      // allow relining at class 6
@@ -48,27 +49,29 @@ export function optionCosts(p, P) {
   return { rep, rel, fail, coordWith, dayPrice };
 }
 
-// state index: (s, lined) -> (s-1) + 6*lined
+// state index: (class s, track l) -> (s-1) + 6*l; track 0 = unlined, 1 = relined at class 1–4, 2 = relined at class 5–6
+const N = 18;
 const idx = (s, l) => (s - 1) + 6 * l;
 
 function buildMdp(p, P, C) {
-  const pu = Math.min(1, 4 / p.life), pl = Math.min(1, 4 / P.linerLife);
+  // ageing rates: each track reaches class 6 after its expected life (4 steps from class 2, 3 steps from class 3)
+  const rates = [Math.min(1, 4 / p.life), Math.min(1, 4 / P.linerLife), Math.min(1, 3 / P.linerLifeLate)];
   const beta = 1 / (1 + P.rate / 100);
   const relOK = (s, l) => p.reline_possible && !l && (s <= 5 || P.reline6);
-  const post = { rel: s => idx(s <= 4 ? 2 : 3, 1), rep: () => idx(1, 0) };
+  const post = { rel: s => (s <= 4 ? idx(2, 1) : idx(3, 2)), rep: () => idx(1, 0) };
   // one year in state k after the action: risk cost + transition distribution
   const yearOf = k => {
-    const s = (k % 6) + 1, l = k >= 6 ? 1 : 0, f = POF[s], pa = l ? pl : pu;
+    const s = (k % 6) + 1, l = Math.floor(k / 6), f = POF[s], pa = rates[l];
     const next = [[idx(1, 0), f]];
     if (s < 6) { next.push([idx(s + 1, l), (1 - f) * pa], [k, (1 - f) * (1 - pa)]); } else next.push([k, 1 - f]);
     return { risk: f, next };
   };
-  const years = Array.from({ length: 12 }, (_, k) => yearOf(k));
+  const years = Array.from({ length: N }, (_, k) => yearOf(k));
   return { beta, relOK, post, years };
 }
 
 function qValues(V, k, M, C) {
-  const s = (k % 6) + 1, l = k >= 6 ? 1 : 0;
+  const s = (k % 6) + 1, l = Math.floor(k / 6);
   const cont = j => M.years[j].risk * C.fail.total + M.beta * M.years[j].next.reduce((a, [n, pr]) => a + pr * V[n], 0);
   const q = { defer: cont(k), reline: Infinity, replace: C.rep.total + cont(idx(1, 0)) };
   if (M.relOK(s, l)) q.reline = C.rel.total + cont(M.post.rel(s));
@@ -80,11 +83,11 @@ const argmin = q => Object.keys(q).reduce((a, b) => (q[b] < q[a] ? b : a));
 export function solvePipe(p, P, V0) {
   const C = optionCosts(p, P);
   const M = buildMdp(p, P, C);
-  let V = V0 ? Float64Array.from(V0) : new Float64Array(12); // warm start after a slider change
+  let V = V0?.length === N ? Float64Array.from(V0) : new Float64Array(N); // warm start after a slider change
   for (let it = 0; it < 3000; it++) {
-    const W = new Float64Array(12);
+    const W = new Float64Array(N);
     let delta = 0;
-    for (let k = 0; k < 12; k++) {
+    for (let k = 0; k < N; k++) {
       const q = qValues(V, k, M, C);
       W[k] = Math.min(q.defer, q.reline, q.replace);
       delta = Math.max(delta, Math.abs(W[k] - V[k]));
@@ -102,16 +105,16 @@ export function solvePipe(p, P, V0) {
 // Split the lifetime value of each option into FV / SV / EV by evaluating the optimal policy per component.
 export function componentSplit(p, P, sol) {
   const { costs: C, M, V } = sol;
-  const pol = Array.from({ length: 12 }, (_, k) => argmin(qValues(V, k, M, C)));
+  const pol = Array.from({ length: N }, (_, k) => argmin(qValues(V, k, M, C)));
   const comps = ['fv', 'sv', 'ev'];
   const imm = (a, c) => (a === 'replace' ? C.rep[c] : a === 'reline' ? C.rel[c] : 0);
   const postOf = (a, k) => (a === 'replace' ? idx(1, 0) : a === 'reline' ? M.post.rel((k % 6) + 1) : k);
-  const Vc = Object.fromEntries(comps.map(c => [c, new Float64Array(12)]));
+  const Vc = Object.fromEntries(comps.map(c => [c, new Float64Array(N)]));
   for (let it = 0; it < 3000; it++) {
     let delta = 0;
     for (const c of comps) {
-      const W = new Float64Array(12);
-      for (let k = 0; k < 12; k++) {
+      const W = new Float64Array(N);
+      for (let k = 0; k < N; k++) {
         const j = postOf(pol[k], k);
         W[k] = imm(pol[k], c) + M.years[j].risk * C.fail[c] + M.beta * M.years[j].next.reduce((a, [n, pr]) => a + pr * Vc[c][n], 0);
         delta = Math.max(delta, Math.abs(W[k] - Vc[c][k]));
