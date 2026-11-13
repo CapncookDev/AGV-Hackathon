@@ -28,6 +28,8 @@ jobs:
         working-directory: web
       - run: npm run build
         working-directory: web
+      - name: Add the sewer renewal dashboard (static) under /dashboard
+        run: cp -r dashboard web/out/dashboard
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/out
