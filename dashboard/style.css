@@ -135,3 +135,12 @@ table.assume td:first-child { font-weight: 600; white-space: nowrap; }
 
 .soil-legend { display: inline-flex; gap: 4px 8px; flex-wrap: wrap; align-items: center; color: var(--muted); }
 .soil-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--c); margin-right: 2px; }
+
+.rank-wrap { max-height: 360px; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+table.rank { font-size: 11.5px; }
+table.rank th { position: sticky; top: 0; background: var(--surface); }
+table.rank tr[data-id] { cursor: pointer; }
+table.rank tr[data-id]:hover td { background: var(--accent-soft); }
+table.rank tr.over td { opacity: .45; }
+table.rank .badge { font-size: 10px; padding: 1px 6px; }
+.mono { font-family: var(--mono); }

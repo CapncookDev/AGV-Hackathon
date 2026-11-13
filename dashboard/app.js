@@ -91,7 +91,7 @@ function solveAll() {
       p.sol = solvePipe(p.props, P, p.sol?.V);
     }
     if (i < pipes.length) setTimeout(step, 0);
-    else { restyle(); renderSummary(); renderLimitations(); if (selected) renderSelection(selected); }
+    else { restyle(); renderSummary(); renderLimitations(); renderRanking(); if (selected) renderSelection(selected); }
   };
   step();
 }
@@ -175,6 +175,29 @@ function renderLegend() {
   else if (by === 'age') items = [['< 20 yr', AGE_BUCKETS[0][1]], ['20–39', AGE_BUCKETS[1][1]], ['40–59', AGE_BUCKETS[2][1]], ['60–79', AGE_BUCKETS[3][1]], ['80+', AGE_BUCKETS[4][1]]];
   else items = [['no gain (defer)', '#c9d3da'], ['< €5k', '#f2c66d'], ['€5–25k', '#e08a2c'], ['€25–100k', '#c4512a'], ['> €100k', '#7e1d12']];
   $('legend').innerHTML = items.map(([k, col]) => `<span style="--c:${col}">${k}</span>`).join('');
+}
+
+// ---------- ranking: interventions ordered by value of acting now, within a budget ----------
+let budget = 2e6;
+function renderRanking() {
+  const acts = pipes.filter(p => p.sol.action !== 'defer').map(p => {
+    const o = p.sol.action === 'replace' ? p.sol.costs.rep : p.sol.costs.rel;
+    return { p, o, iv: p.sol.ivNow, risk: POF[p.props.cond] * p.sol.costs.fail.total,
+             co2: (p.sol.action === 'replace' ? p.props.gwp_rep_kg : p.props.gwp_rel_kg) / 1000, fn: p.sol.costs.fn[p.sol.action] };
+  }).sort((a, b) => b.iv - a.iv);
+  let cum = 0, inBudget = 0;
+  acts.forEach(r => { cum += r.o.fv; r.cum = cum; r.ok = cum <= budget; if (r.ok) inBudget++; });
+  const fundedIv = acts.filter(r => r.ok).reduce((s, r) => s + r.iv, 0);
+  $('ranking').innerHTML = `
+    <label class="ctl"><span class="row"><span>Budget this year (FV)</span>
+      <select id="budgetSel">${[[5e5, '€0.5M'], [1e6, '€1M'], [2e6, '€2M'], [5e6, '€5M'], [Infinity, 'no cap']].map(([v, l]) => `<option value="${v}" ${v === budget ? 'selected' : ''}>${l}</option>`).join('')}</select></span></label>
+    <p class="note" style="margin:0"><b>${inBudget}</b> of ${acts.length} interventions fit, worth <b>${keur(fundedIv)}</b> in value of acting now. Ranked by that value; risk, function and carbon shown per row.</p>
+    <div class="rank-wrap"><table class="rank"><thead><tr><th>#</th><th>Pipe</th><th>Advice</th><th>Value now</th><th>Cost</th><th>Risk/yr</th><th>CO₂ t</th><th>Fn</th></tr></thead><tbody>
+      ${acts.slice(0, 30).map((r, i) => `<tr class="${r.ok ? '' : 'over'}" data-id="${r.p.props.id}"><td>${i + 1}</td><td class="mono">${r.p.props.id}</td><td><span class="badge ${r.p.sol.action}">${r.p.sol.action}</span></td><td>${keur(r.iv)}</td><td>${keur(r.o.fv)}</td><td>${keur(r.risk)}</td><td>${r.co2.toFixed(1)}</td><td>${Math.round(r.fn * 100)}%</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="note" style="margin:0">Top 30 of ${acts.length}. Greyed rows fall outside the budget. Click a row to open the pipe.</p>`;
+  $('budgetSel').onchange = e => { budget = +e.target.value; renderRanking(); };
+  $('ranking').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => { const p = pipeById[tr.dataset.id]; if (p) selectPipe(p); }; });
 }
 
 // ---------- limitations: both cost sources side by side + age leakage ----------
@@ -263,6 +286,7 @@ function renderSelection(p) {
       <tbody>
         <tr><td>${cap(act)} ${t && !t.now ? '<span class="muted">(today’s prices)</span>' : 'now'}</td><td>${eur(o.fv)}</td><td>${eur(o.sv)}</td><td>${eur(o.ev)}</td><td><b>${eur(o.total)}</b></td></tr>
         ${s.action !== 'defer' ? `<tr class="best"><td>Value of acting now</td><td>${eur(d('fv'))}</td><td>${eur(d('sv'))}</td><td>${eur(d('ev'))}</td><td><b>${eur(s.ivNow)}</b></td></tr>` : ''}
+        <tr><td>Function (capacity)</td><td colspan="4">defer ${Math.round(C.fn.defer * 100)} % · reline ${Math.round(C.fn.reline * 100)} % · replace ${Math.round(C.fn.replace * 100)} % <span class="muted">of design capacity</span></td></tr>
         <tr><td>Carbon (GWP)</td><td colspan="4">${act === 'replace' ? (pr.gwp_rep_kg / 1000).toFixed(1) : (pr.gwp_rel_kg / 1000).toFixed(1)} t CO₂e <span class="muted">· pipe/liner from NMD via Madaster, works from Ecoinvent</span></td></tr>
         <tr><td>Risk of waiting /yr</td><td>${eur(POF[pr.cond] * C.fail.fv)}</td><td>${eur(POF[pr.cond] * C.fail.sv)}</td><td>${eur(POF[pr.cond] * C.fail.ev)}</td><td>${eur(risk)}</td></tr>
       </tbody>

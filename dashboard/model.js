@@ -47,7 +47,16 @@ export function optionCosts(p, P) {
   // cost of one failure: emergency replacement (1.5×), damage, double closure, materials
   const fail = { fv: 1.5 * fvRepBase + P.damage * D / 300, sv: 2 * daysRep * dayPrice + treeSV, ev: evRep };
   fail.total = fail.fv + fail.sv + fail.ev;
-  return { rep, rel, fail, coordWith, dayPrice };
+  // FUNCTION (4th axis): hydraulic capacity relative to the design capacity (Manning: Q ~ D^(8/3) / n). ASSUMPTIONS:
+  // defer: defects and deposits cost 6 % per condition class above 1; reline: liner wall (max(4 mm, D/50)) narrows
+  // the pipe but its smooth wall (n 0.010 vs 0.013) compensates, capped at 100 %; replace: 100 %.
+  const t = Math.max(4, D / 50);
+  const fn = {
+    defer: Math.max(0, 1 - 0.06 * (p.cond - 1)),
+    reline: Math.min(1, Math.pow((D - 2 * t) / D, 8 / 3) * 0.013 / 0.010),
+    replace: 1,
+  };
+  return { rep, rel, fail, coordWith, dayPrice, fn };
 }
 
 // state index: (class s, track l) -> (s-1) + 6*l; track 0 = unlined, 1 = relined at class 1–4, 2 = relined at class 5–6
