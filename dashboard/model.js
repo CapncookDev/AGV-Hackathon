@@ -12,8 +12,8 @@ export const DEFAULTS = {
   dayPerAddr: 10,      // € per day per address within 30 m
   treeCost: 3500,      // € per tree within 4 m of a dig (replanting value, NVTB-based; Haarlem 2019 example)
   protTreeCost: 15000, // € per protected tree within 10 m (monumental / special)
-  repMul: 3.8,         // × Barendrecht 2023 unit price + road (≈ €614/m at Ø250) → VMM 2018 dense-urban, indexed ≈ €2,330/m at Ø250
-  relMul: 1.48,        // × Barendrecht 2023 reline price (≈ €207/m at Ø250) → VMM 2018 relining, indexed ≈ €305/m at Ø250
+  repMul: 1,           // Barendrecht 2023 unit price + road (≈ €614/m at Ø250); 3.8 = VMM 2018 dense-urban, indexed
+  relMul: 1,           // Barendrecht 2023 reline price (≈ €207/m at Ø250); 1.48 = VMM 2018 relining, indexed
   damage: 20000,       // € damage per failure for a Ø300 pipe (scales with diameter)
   linerLife: 25,       // years until class 6 after relining at class 1–4 (organisers' slide: +20–30 yr at class 3–4)
   linerLifeLate: 15,   // years until class 6 after relining at class 5–6 (organisers' slide: +10–20 yr)
