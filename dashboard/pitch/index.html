@@ -119,31 +119,26 @@ nav button:disabled { opacity: .4; cursor: default; }
   <div class="grid">
     <div class="card"><b class="d">What’s real</b><ul class="muted"><li><b>Network:</b> W-OTL graph (SPARQL), NMD pipes &amp; liners</li><li><b>Surroundings:</b> GeoTOP soil, BAG addresses, trees</li><li><b>Street works:</b> WIOR, Stadsregie, NDW</li><li><b>Environmental impact:</b> ecoinvent MKI</li></ul></div>
     <div class="card"><b class="r">What’s inferred or synthetic</b><ul class="muted"><li><b>Condition and failure risk:</b> classes 1–6 simulated from age and material; failure rate per class is an assumed table</li><li><b>Unit costs:</b> published Barendrecht 2023 prices</li><li><b>Closure days and peat settlement:</b> estimated</li></ul></div>
-    <div class="card"><b class="x">What doesn’t work yet</b><ul class="muted"><li><b>Advice is mostly an age rule:</b> 84% of it is reproduced by “act past 69% of a pipe’s life”</li><li><b>Costs decide how, not whether:</b> switching cost source changes 11% of advice</li><li><b>Needed:</b> Maximo costs, inspection scores, failure history</li></ul></div>
+    <div class="card"><b class="x">What doesn’t work yet</b><ul class="muted"><li><b>Costs decide how, not whether:</b> switching cost source changes 11% of advice</li><li><b>Needed:</b> Maximo costs, inspection scores, failure history</li></ul></div>
   </div>
   <p class="src"><a href="../slides/limitations.html" target="_blank" rel="noopener">Limitations in detail →</a> · <a href="../data/sewer.ifc">IFC 4.3 model with soil layers</a></p>
 </section>
 
 <section class="slide" data-title="What it changes">
-  <span class="eyebrow">The proof · What it changes · 0:50</span>
-  <h2>Pricing carbon does not make relining win. It makes replacing win.</h2>
+  <span class="eyebrow">The proof · What it changes · 0:40</span>
+  <h2>Change the data and the advice moves. Environment is now part of the conversation.</h2>
   <div class="grid">
-    <div class="card"><span class="big">1.6 vs 3</span><span class="muted">kg CO₂e per metre per year of service: new concrete pipe (~70 yr) vs liner (~25 yr)</span></div>
-    <div class="card"><span class="big"><span class="r">153 → 51</span></span><span class="muted">relines as the CO₂ price rises from €116 to €2,000 per tonne</span></div>
-    <div class="card"><span class="big">27%</span><span class="muted">of pipes on thick peat: they age faster and cost more to dig up</span></div>
+    <div class="card"><b>Carbon costs more</b><span class="muted">Relines drop from 153 to 51. A new pipe lasts about 70 years, a liner about 25, so replacing is cleaner over time.</span></div>
+    <div class="card"><b>The street opens anyway</b><span class="muted">When other works are planned there, digging and closure are shared, so replacing becomes cheaper.</span></div>
+    <div class="card"><b>A busy street</b><span class="muted">More homes nearby make each day of closure cost more, which favours the quicker reline.</span></div>
   </div>
-  <p class="muted">The number Waternet can now know: the lifetime value, per pipe, of acting now instead of waiting a year, split into money, disruption and carbon.</p>
+  <p class="muted">For every pipe: what acting now instead of waiting a year is worth, in money, disruption and carbon.</p>
 </section>
 
-<section class="slide" data-title="First step">
-  <span class="eyebrow">The proof · First step · 0:50</span>
-  <h2>On Monday: plug in what Waternet already has.</h2>
-  <div class="grid">
-    <div class="card"><span class="step">1</span><b>Maximo costs</b><span class="muted">Own relining and replacement costs per diameter replace the published unit prices.</span></div>
-    <div class="card"><span class="step">2</span><b>Inspect the 441</b><span class="muted">Camera inspections (NEN 2767) on the pipes advised for replacement replace the synthetic condition.</span></div>
-    <div class="card"><span class="step">3</span><b>Plan with the city</b><span class="muted">Match replacements to Stadsregie and NDW works, so the street opens once.</span></div>
-  </div>
-  <div class="answer">So the next time a street in Bos en Lommer opens, Waternet knows which pipe to dig, which to line, and what that costs the climate.</div>
+<section class="slide" data-title="Close">
+  <span class="eyebrow">The close · 0:30</span>
+  <h1>3,900 km of sewer. One question per pipe. Now answered with the climate in it.</h1>
+  <div class="answer">Money, people and climate in one number, with the reason behind every <span class="d">defer</span>, <span class="r">reline</span> and <span class="x">replace</span>. Add Waternet’s own costs and inspections, and it runs on the whole network.</div>
   <a class="cta" href="../?tour=1">Open the live demo →</a>
   <div class="title-logos"><img src="img/agv-logo.svg" alt="Waterschap Amstel, Gooi en Vecht"><img src="img/waternet-logo.svg" alt="Waternet"></div>
 </section>
