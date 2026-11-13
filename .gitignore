@@ -37,3 +37,6 @@ venv/
 
 # Raw hackathon data (internal) — keep out of git
 data/raw/
+
+# Local Claude config
+.claude/

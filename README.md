@@ -1,17 +1,10 @@
 # AGV Hackathon — Hack the Water Graph
 
-Use Case 4: Environmental impact in the asset management decision (function, cost, risk, embodied carbon).
-
 ## Structure
 
 ```
-web/        Next.js site deployed on Vercel (Root Directory = web)
-  app/            pages: / , /dashboard , /deck , /video
-  components/     Dashboard (CO2 price + risk cap sliders)
-  data/results.json   dashboard input — currently SAMPLE data, overwrite with pipeline output
-  public/deck.pdf     pitch deck (add when ready)
-  site.config.ts      title, video embed URL
-data/raw/   seed data from organisers (git-ignored)
+web/        Next.js site, deployed on Vercel
+data/raw/   seed data from organisers (git-ignored, keep it out of GitHub)
 ```
 
 ## Run locally
@@ -21,13 +14,13 @@ npm --prefix web install
 npm --prefix web run dev
 ```
 
-## Data contract (`web/data/results.json`)
+## Vercel setup (one-time, repo owner)
 
-```json
-{ "assets": [ { "id": "SEW-001", "type": "sewer section", "material": "PVC",
-    "diameter_mm": 400, "length_m": 120, "condition": 4,
-    "options": [ { "option": "defer|reline|replace", "cost_eur": 0, "gwp_kg": 0,
-                   "risk": 0.0, "function": 0.0, "life_years": 0 } ] } ] }
-```
+1. Sign up at vercel.com with **Continue with GitHub** (as CapncookDev).
+2. **Add New → Project →** import `CapncookDev/AGV-Hackathon`.
+3. Set **Root Directory** to `web`. Framework preset is detected as Next.js; leave build settings default.
+4. **Deploy.** Every push to `main` then deploys to production; other branches get preview URLs.
 
-Decision rule in the dashboard: `score = cost + λ × GWP(t)`, options with risk above the cap are excluded.
+Note: on the free Hobby plan, deploys from a private repo only run for commits authored by the
+Vercel account owner. Commits pushed by other team members are blocked unless the project moves
+to Pro or deploys run through GitHub Actions with a Vercel token.
