@@ -91,13 +91,13 @@ function go(n) {
       <span class="tour-dots">${STEPS.map((_, j) => `<i class="${j === i ? 'on' : ''}"></i>`).join('')}</span>
       <span>
         <button type="button" class="tour-prev" ${i === 0 ? 'disabled' : ''}>Back</button>
-        ${st.end ? '<a class="tour-next" href="pitch/">Back to slides</a>' : '<button type="button" class="tour-next">Next</button>'}
+        <button type="button" class="tour-next">${st.end ? 'Explore the dashboard' : 'Next'}</button>
       </span>
     </div>`;
   card.querySelector('.tour-skip').onclick = stop;
   card.querySelector('.tour-prev').onclick = () => go(i - 1);
   const nx = card.querySelector('button.tour-next');
-  if (nx) nx.onclick = () => go(i + 1);
+  if (nx) nx.onclick = () => (st.end ? stop() : go(i + 1));
   const el = st.target && $(st.target);
   if (el) el.scrollIntoView({ block: st.scrollCard ? 'start' : 'nearest', behavior: 'instant' });
   // wait a frame so opened panels and the card have their final size
