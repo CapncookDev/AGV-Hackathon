@@ -106,8 +106,10 @@ def main(scale=1.0, out=OUT):
 
     m = ifcopenshell.file(schema="IFC4X3")
     project = api("root.create_entity", m, ifc_class="IfcProject", name="AGV Hackathon – sewer network Jan de Jonghstraat")
-    api("unit.assign_unit", m)
-    ctx = api("context.add_context", m, context_type="Model")
+    # every coordinate and size below is in metres (RD New / NAP); the ifcopenshell default would declare
+    # millimetres, so other IFC tools would read the network 1,000x too small
+    api("unit.assign_unit", m, units=[api("unit.add_si_unit", m, unit_type=t) for t in ("LENGTHUNIT", "AREAUNIT", "VOLUMEUNIT")])
+    ctx =api("context.add_context", m, context_type="Model")
     body = api("context.add_context", m, context_type="Model", context_identifier="Body", target_view="MODEL_VIEW", parent=ctx)
 
     # georeference: local origin (x0, y0, 0 m NAP) in RD New
