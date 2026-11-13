@@ -1,4 +1,4 @@
-import { DEFAULTS, POF, solvePipe, componentSplit } from './model.js';
+import { DEFAULTS, POF, solvePipe, componentSplit } from './model.js?v=__BUILD__';
 
 const $ = id => document.getElementById(id);
 const eur = n => (n < 0 ? '−' : '') + '€' + Math.round(Math.abs(n)).toLocaleString('en-US');
@@ -151,7 +151,7 @@ async function setView(view) {
   if (view === 'map') { map.invalidateSize(); if (!map._fitted) { map.fitBounds(L.featureGroup(pipes.map(p => p.layer)).getBounds(), { padding: [10, 10] }); map._fitted = true; } return; }
   if (!scene3d) {
     $('viewNote').firstChild.textContent = 'Loading the 3D island… ';
-    const { initScene } = await import('./scene3d.js');
+    const { initScene } = await import('./scene3d.js?v=__BUILD__');
     scene3d = await initScene($('scene3d'), {
       diameters: Object.fromEntries(pipes.map(p => [p.props.id, p.props.diameter_mm])),
       onPick: id => { const p = pipes.find(x => x.props.id === id); if (p) selectPipe(p); },
@@ -349,7 +349,7 @@ async function openBim(key = 'station') {
     b.onclick = () => openBim(b.dataset.key);
   });
   try {
-    const mod = await import('./bim.js');
+    const mod = await import('./bim.js?v=__BUILD__');
     await mod.showModel($('bimView'), $('bimInfo'), key);
   } catch (e) {
     $('bimInfo').textContent = 'Could not load the BIM viewer: ' + e.message;
@@ -400,7 +400,7 @@ async function main() {
   stationLayer.on('click', () => openBim('station'));
   $('openStation').onclick = e => { e.preventDefault(); openBim('station'); };
   $('openNetwork').onclick = e => { e.preventDefault(); openBim('sewer'); };
-  $('soilOn').onchange = async e => { (await import('./bim.js')).setSoil(e.target.checked); };
+  $('soilOn').onchange = async e => { (await import('./bim.js?v=__BUILD__')).setSoil(e.target.checked); };
 
   pipeLayer.addTo(map); stationLayer.addTo(map); stadLayer.addTo(map); ndwLayer.addTo(map);
   L.control.layers({ 'Map (PDOK)': base, 'Aerial (PDOK)': aerial }, {

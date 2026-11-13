@@ -30,6 +30,9 @@ jobs:
         working-directory: web
       - name: Add the sewer renewal dashboard (static) under /dashboard
         run: cp -r dashboard web/out/dashboard
+      - name: Stamp the build into dashboard asset URLs (busts browser caches on every deploy)
+        run: |
+          grep -rl "__BUILD__" web/out/dashboard --include=*.html --include=*.js | xargs sed -i "s/__BUILD__/${GITHUB_SHA::8}/g"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/out
