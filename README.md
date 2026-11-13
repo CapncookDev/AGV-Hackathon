@@ -3,7 +3,7 @@
 ## Structure
 
 ```
-web/        Next.js site, deployed on Vercel
+web/        Next.js site, statically exported and deployed to GitHub Pages
 data/raw/   seed data from organisers (git-ignored, keep it out of GitHub)
 ```
 
@@ -14,13 +14,11 @@ npm --prefix web install
 npm --prefix web run dev
 ```
 
-## Vercel setup (one-time, repo owner)
+## Deployment
 
-1. Sign up at vercel.com with **Continue with GitHub** (as CapncookDev).
-2. **Add New → Project →** import `CapncookDev/AGV-Hackathon`.
-3. Set **Root Directory** to `web`. Framework preset is detected as Next.js; leave build settings default.
-4. **Deploy.** Every push to `main` then deploys to production; other branches get preview URLs.
+`.github/workflows/deploy.yml` builds `web/` with `next build` (static export, see
+`output: "export"` in `web/next.config.ts`) and publishes `web/out` to GitHub Pages on every push
+to `main` — no per-author restriction like Vercel's free plan has, any team member's push deploys.
 
-Note: on the free Hobby plan, deploys from a private repo only run for commits authored by the
-Vercel account owner. Commits pushed by other team members are blocked unless the project moves
-to Pro or deploys run through GitHub Actions with a Vercel token.
+One-time setup (repo owner): **Settings → Pages → Source → GitHub Actions**. The site is then
+served at `https://capncookdev.github.io/AGV-Hackathon/`.
