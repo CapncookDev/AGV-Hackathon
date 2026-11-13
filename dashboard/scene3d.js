@@ -140,6 +140,47 @@ export async function initScene(container, { onPick, onStation, diameters }) {
   pipeMesh.material.depthTest = false; // X-ray: pipes stay visible through the ground while see-through is on
   scene.add(pipeMesh);
 
+  // joints: straight flat-ended segments leave wedge gaps where they meet, and pipes that reach a
+  // junction at different depths (6× exaggerated) end metres apart. A ball in the pipe's colour at
+  // every vertex rounds off the joins; a grey drop shaft connects the ends at a junction where depths differ.
+  const balls = [], ballsById = {}, nodes = new Map();
+  for (const [id, pts] of Object.entries(data.pipes)) {
+    const r = ((diameters[id] || 300) / 2000) * PIPE_VIS;
+    pts.forEach((p, k) => {
+      (ballsById[id] ||= []).push(balls.length);
+      balls.push([id, p, r]);
+      if (k === 0 || k === pts.length - 1) {
+        const key = `${Math.round(p[0] * 10)},${Math.round(p[1] * 10)}`;
+        if (!nodes.has(key)) nodes.set(key, []);
+        nodes.get(key).push([id, p[2] * DEPTH_EXAG, r, p]);
+      }
+    });
+  }
+  const ballMesh = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 12, 8), pipeMesh.material, balls.length);
+  balls.forEach(([, p, r], i) => {
+    m4.compose(v.set(p[0], p[2] * DEPTH_EXAG, -p[1]), q.identity(), s.set(r, r, r));
+    ballMesh.setMatrixAt(i, m4);
+    ballMesh.setColorAt(i, new THREE.Color(0x888888));
+  });
+  ballMesh.renderOrder = 10;
+  scene.add(ballMesh);
+
+  const drops = [];
+  for (const ends of nodes.values()) {
+    const ys = ends.map(e => e[1]), lo = Math.min(...ys), hi = Math.max(...ys);
+    if (ends.length < 2 || hi - lo < 0.3) continue;
+    drops.push({ ids: ends.map(e => e[0]), x: ends[0][3][0], y: ends[0][3][1], lo, hi, r: Math.max(...ends.map(e => e[2])) });
+  }
+  const dropMat = new THREE.MeshLambertMaterial({ color: 0x8d969c, emissive: 0x222222, depthTest: false });
+  const dropMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(1, 1, 1, 12), dropMat, Math.max(1, drops.length));
+  drops.forEach((d, i) => {
+    m4.compose(v.set(d.x, (d.lo + d.hi) / 2, -d.y), q.identity(), s.set(d.r, d.hi - d.lo, d.r));
+    dropMesh.setMatrixAt(i, m4);
+  });
+  dropMesh.count = drops.length;
+  dropMesh.renderOrder = 9;
+  scene.add(dropMesh);
+
   // pumping station marker
   let station = null;
   if (data.station) {
@@ -169,6 +210,8 @@ export async function initScene(container, { onPick, onStation, diameters }) {
         if (station && ray.intersectObject(station)[0]) { onStation(); return; }
         const hit = ray.intersectObject(pipeMesh)[0];
         if (hit) { onPick(segOf[hit.instanceId]); return; }
+        const ball = ray.intersectObject(ballMesh)[0];
+        if (ball) { onPick(balls[ball.instanceId][0]); return; }
       }
     }
   });
@@ -187,8 +230,10 @@ export async function initScene(container, { onPick, onStation, diameters }) {
     for (const [id, idxs] of Object.entries(segsById)) {
       c.set(id === selected ? 0x1a73e8 : (colours[id] || '#888888'));
       idxs.forEach(i => pipeMesh.setColorAt(i, c));
+      (ballsById[id] || []).forEach(i => ballMesh.setColorAt(i, c));
     }
     pipeMesh.instanceColor.needsUpdate = true;
+    ballMesh.instanceColor.needsUpdate = true;
   };
   S = {
     resize,
@@ -196,7 +241,8 @@ export async function initScene(container, { onPick, onStation, diameters }) {
     select(id) { selected = id; paint(); },
     setGround(seeThrough) {
       top.opacity = seeThrough ? 0.3 : 0.97;
-      pipeMesh.material.depthTest = !seeThrough; pipeMesh.material.needsUpdate = true;
+      pipeMesh.material.depthTest = !seeThrough; pipeMesh.material.needsUpdate = true; // also the joint balls
+      dropMat.depthTest = !seeThrough; dropMat.needsUpdate = true;
       surfaces.forEach(m => { m.material.opacity = m.userData.opacity * (seeThrough ? 0.45 : 1); });
     },
     // camera on an orbit around the island centre: azimuth and elevation in degrees, distance as a fraction of the island size
@@ -217,6 +263,13 @@ export async function initScene(container, { onPick, onStation, diameters }) {
       segOf.forEach((id, i) => pipeMesh.setMatrixAt(i, keep(id) ? S._orig[i] : zero));
       pipeMesh.instanceMatrix.needsUpdate = true;
       pipeMesh.computeBoundingSphere();
+      // joints follow their pipe; a drop shaft only shows while it still joins two visible pipes
+      const save = mesh => Array.from({ length: mesh.count }, (_, i) => { const m = new THREE.Matrix4(); mesh.getMatrixAt(i, m); return m; });
+      S._origBalls ||= save(ballMesh); S._origDrops ||= save(dropMesh);
+      balls.forEach(([id], i) => ballMesh.setMatrixAt(i, keep(id) ? S._origBalls[i] : zero));
+      drops.forEach((d, i) => dropMesh.setMatrixAt(i, new Set(d.ids.filter(keep)).size >= 2 ? S._origDrops[i] : zero));
+      ballMesh.instanceMatrix.needsUpdate = true; dropMesh.instanceMatrix.needsUpdate = true;
+      ballMesh.computeBoundingSphere();
     },
   };
   resize();
