@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<title>Sewer Renewal · Film</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap">
+<style>
+  /* 1920×1080 stage for the one-minute pitch film; rendered frame by frame by pipeline/record_film.mjs */
+  :root { --bg: #f2f0eb; --fg: #1b2430; --muted: #5f6b78; --accent: #0b6bcb; --defer: #4f7a5e; --reline: #c4840a; --replace: #b0432d; }
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: #000; font-family: Inter, system-ui, sans-serif; }
+  .layer { position: absolute; inset: 0; }
+  #aerial { overflow: hidden; background: #3a4a3a; }
+  #tiles { position: absolute; left: 50%; top: 50%; transform-origin: center; }
+  #tiles img { position: absolute; width: 256px; height: 256px; display: block; }
+  #shade { background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(10,18,26,.55) 100%); }
+  #app { border: 0; width: 1920px; height: 1080px; background: var(--bg); }
+  .cap { position: absolute; left: 96px; bottom: 96px; max-width: 1100px; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.35); }
+  .cap.dark { color: var(--fg); text-shadow: none; background: rgba(255,255,255,.92); padding: 28px 34px; border-radius: 24px; box-shadow: 0 18px 50px rgba(27,36,48,.18); }
+  .eyebrow { font-weight: 700; font-size: 22px; letter-spacing: .14em; text-transform: uppercase; opacity: .9; }
+  .eyebrow::before { content: ""; display: block; width: 56px; height: 4px; background: var(--accent); margin-bottom: 18px; border-radius: 2px; }
+  .cap.dark .eyebrow { color: var(--accent); }
+  .head { font-weight: 800; font-size: 64px; line-height: 1.08; letter-spacing: -.02em; margin-top: 12px; }
+  .chips { display: flex; gap: 14px; margin-top: 22px; }
+  .chip { font-weight: 700; font-size: 26px; padding: 10px 22px; border-radius: 999px; color: #fff; }
+  .chip.blue { background: var(--accent); }
+  .d { background: var(--defer); } .r { background: var(--reline); } .x { background: var(--replace); }
+  #statWrap { display: grid; place-items: center; }
+  #stat { width: 1100px; background: rgba(255,255,255,.94); border-radius: 36px; padding: 56px 72px; box-shadow: 0 30px 80px rgba(0,0,0,.25); }
+  #stat .tag { font-weight: 700; font-size: 20px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  #stat .num { font-weight: 800; font-size: 150px; line-height: 1; letter-spacing: -.03em; margin-top: 22px; color: var(--accent); }
+  #stat .num.small { font-size: 76px; line-height: 1.1; color: var(--fg); }
+  #stat .sub { font-weight: 700; font-size: 38px; margin-top: 18px; color: var(--fg); }
+  #stat .note { font-size: 24px; color: var(--muted); margin-top: 10px; }
+  #end { background: var(--bg); display: grid; align-content: center; padding: 0 160px; gap: 40px; }
+  #end .logos { display: flex; gap: 48px; align-items: center; }
+  #end .logos img { height: 72px; }
+  #end h1 { margin: 0; font-weight: 800; font-size: 76px; line-height: 1.08; letter-spacing: -.02em; color: var(--fg); max-width: 1500px; }
+  #end .url { font-weight: 700; font-size: 30px; color: var(--accent); }
+  #end .url::before { content: ""; display: block; width: 72px; height: 5px; background: var(--accent); margin-bottom: 22px; border-radius: 3px; }
+  #end .fine { font-size: 20px; color: var(--muted); }
+  .attr { position: absolute; right: 24px; bottom: 16px; font-size: 14px; color: rgba(255,255,255,.75); }
+</style>
+</head>
+<body>
+<div class="layer" id="aerial"><div id="tiles"></div><div class="layer" id="shade"></div><div class="attr">Luchtfoto © PDOK / Beeldmateriaal Nederland</div></div>
+<video class="layer" id="clip" muted playsinline preload="auto" style="object-fit:cover;width:1920px;height:1080px;background:#000"></video>
+<div class="layer" id="clipShade" style="background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(5,10,16,.6) 100%)"></div>
+<iframe class="layer" id="app" src="../?film=1" title="Dashboard"></iframe>
+<div class="layer" id="statWrap"><div id="stat"></div></div>
+<div class="layer" id="end">
+  <div class="logos"><img src="../pitch/img/agv-logo.svg" alt="Waterschap Amstel, Gooi en Vecht"><img src="../pitch/img/waternet-logo.svg" alt="Waternet"></div>
+  <h1>Which pipe to dig, which to line, and what it costs the climate.</h1>
+  <div><div class="url">capncookdev.github.io/AGV-Hackathon</div><div class="fine">Hack the Water Graph · Use Case 4 · hackathon prototype</div></div>
+</div>
+<div class="cap" id="cap"></div>
+
+<script>
+// ---------- aerial photo of Bos en Lommer from PDOK tiles (open data) ----------
+const Z = 17, LAT = 52.3792, LON = 4.8452, COLS = 10, ROWS = 7;
+const n = 2 ** Z;
+const fx = (LON + 180) / 360 * n;
+const fy = (1 - Math.log(Math.tan(LAT * Math.PI / 180) + 1 / Math.cos(LAT * Math.PI / 180)) / Math.PI) / 2 * n;
+const tiles = document.getElementById('tiles');
+const x0 = Math.floor(fx) - COLS / 2, y0 = Math.floor(fy) - Math.floor(ROWS / 2);
+tiles.style.width = COLS * 256 + 'px'; tiles.style.height = ROWS * 256 + 'px';
+tiles.style.marginLeft = -((fx - x0) * 256) + 'px'; tiles.style.marginTop = -((fy - y0) * 256) + 'px';
+tiles.style.transformOrigin = `${(fx - x0) * 256}px ${(fy - y0) * 256}px`;
+const imgs = [];
+for (let j = 0; j < ROWS; j++) for (let i = 0; i < COLS; i++) {
+  const im = new Image();
+  im.crossOrigin = 'anonymous';
+  im.src = `https://service.pdok.nl/hwh/luchtfotorgb/wmts/v1_0/Actueel_orthoHR/EPSG:3857/${Z}/${x0 + i}/${y0 + j}.jpeg`;
+  im.style.left = i * 256 + 'px'; im.style.top = j * 256 + 'px';
+  tiles.appendChild(im); imgs.push(im);
+}
+
+// ---------- timeline ----------
+const ease = x => x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x);
+const fade = (t, a, b, d = 0.6) => Math.min(ease((t - a) / d), ease((b - t) / d));
+const $ = id => document.getElementById(id);
+const app = () => $('app').contentWindow;
+const dash = () => app().dashboard;
+const SCENES = [
+  ['ai1', 0], ['ai2', 6], ['ai3', 12], ['aerial', 18], ['island', 21], ['map', 26], ['card', 34], ['stats', 42], ['end', 52], ['done', 60],
+];
+const sceneAt = t => SCENES.filter(s => s[1] <= t).pop()[0];
+let current = null;
+
+async function enter(name) {
+  if (name.startsWith('ai')) {
+    const v = $('clip'); v.src = `clips/shot${name[2]}.mp4`;
+    await new Promise(r => { v.onloadeddata = r; v.onerror = r; }); return;
+  }
+  const d = dash();
+  if (name === 'island') { d.setView('3d'); await wait(1500); }
+  if (name === 'map') { d.setView('map'); await wait(3500); }
+  if (name === 'card') {
+    d.setView('3d');
+    const top = d.pipes.filter(p => p.sol.action !== 'defer').sort((a, b) => b.sol.ivNow - a.sol.ivNow)[0];
+    d.select(top.props.id); await wait(1500);
+  }
+}
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+function caption(html, dark = false) {
+  const c = $('cap'); if (c.dataset.html !== html) { c.innerHTML = html; c.dataset.html = html; }
+  c.className = 'cap' + (dark ? ' dark' : '');
+}
+const count = (t, a, d, to) => Math.round(to * ease((t - a) / d));
+
+// render(t): set every layer for time t (seconds); async so the recorder can wait for scene changes
+window.render = async function (t) {
+  const name = sceneAt(t);
+  if (name !== current) { current = name; await enter(name); }
+  const isAI = name.startsWith('ai');
+  $('clip').style.opacity = isAI ? 1 : 0; $('clipShade').style.opacity = isAI ? 1 : 0;
+  if (isAI) {
+    const start = SCENES.find(s => s[0] === name)[1], v = $('clip');
+    const target = Math.min((t - start) * 5 / 6, v.duration - 0.05);
+    if (Math.abs(v.currentTime - target) > 0.001) { v.currentTime = target; await new Promise(r => { v.onseeked = r; }); }
+  }
+  const aerialOn = name === 'aerial' || name === 'stats';
+  $('aerial').style.opacity = aerialOn ? 1 : 0;
+  $('app').style.opacity = ['island', 'map', 'card'].includes(name) ? 1 : 0;
+  $('statWrap').style.opacity = name === 'stats' ? 1 : 0;
+  $('end').style.opacity = name === 'end' || name === 'done' ? fade(t, 52, 99, 0.8) : 0;
+  const cap = $('cap');
+
+  if (name === 'ai1') {
+    caption('<div class="eyebrow">AGV · Waternet · Bos en Lommer, Amsterdam</div><div class="head">40 km of sewer under one neighbourhood.</div>');
+    cap.style.opacity = fade(t, 0.6, 5.7);
+  } else if (name === 'ai2') {
+    caption('<div class="eyebrow">Every pipe, sooner or later</div><div class="head">Dig, line, or wait?</div><div class="chips"><span class="chip d">Defer</span><span class="chip r">Reline</span><span class="chip x">Replace</span></div>');
+    cap.style.opacity = fade(t, 6.4, 11.7);
+  } else if (name === 'ai3') {
+    caption('<div class="eyebrow">The timing problem</div><div class="head">Too late: it fails.<br>Too early: money and carbon wasted.</div>');
+    cap.style.opacity = fade(t, 12.4, 17.7);
+  } else if (name === 'aerial') {
+    $('tiles').style.transform = `scale(${1.05 + 0.25 * ((t - 18) / 3)}) rotate(${-2 + (t - 18) * 0.5}deg)`;
+    $('tiles').style.filter = 'none';
+    caption('<div class="eyebrow">Bos en Lommer, Amsterdam</div><div class="head">One model of the whole neighbourhood.</div>');
+    cap.style.opacity = fade(t, 18.3, 25.7);
+  } else if (name === 'island') {
+    const k = (t - 21) / 5;
+    dash().scene()?.setCamera(-50 + 60 * k, 24 - 6 * k, 1.05 - 0.2 * k);
+    caption('<div class="eyebrow">Real soil underneath · TNO GeoTOP</div><div class="head">Every pipe, tree and building. Real soil underneath.</div>', true);
+    cap.style.opacity = fade(t, 21, 25.7, 0.3);
+  } else if (name === 'map') {
+    caption('<div class="eyebrow">The Waternet knowledge graph</div><div class="head">1,804 sewer sections. One advice each.</div><div class="chips"><span class="chip blue">One SPARQL query</span></div>', true);
+    cap.style.opacity = fade(t, 26.6, 33.6);
+  } else if (name === 'card') {
+    const k = (t - 34) / 8;
+    dash().scene()?.setCamera(10 + 25 * k, 30, 0.75);
+    caption('<div class="eyebrow">Per pipe, against the risk of waiting</div><div class="head">Money, disruption and carbon. All in euros.</div>', true);
+    cap.style.opacity = fade(t, 34.6, 41.6);
+  } else if (name === 'stats') {
+    $('tiles').style.transform = `scale(1.4) rotate(1deg)`;
+    $('tiles').style.filter = 'blur(14px) brightness(.85)';
+    cap.style.opacity = 0;
+    const s = $('stat');
+    if (t < 46) s.innerHTML = `<div class="tag">Act now, by the model</div><div class="num">${count(t, 42.3, 1.6, 594)}</div><div class="sub"><span style="color:var(--reline)">153 reline</span> · <span style="color:var(--replace)">441 replace</span></div><div class="note">of 1,804 sewer sections; the rest can safely wait</div>`;
+    else if (t < 49.5) s.innerHTML = `<div class="tag">What it takes</div><div class="num">€${(6.4 * ease((t - 46.2) / 1.4)).toFixed(1)}M</div><div class="sub">${count(t, 46.2, 1.4, 991)} t CO₂e, priced in</div><div class="note">disruption and trees counted next to cost</div>`;
+    else s.innerHTML = `<div class="tag">What it changes</div><div class="num small">Pricing carbon favours replacing, not relining.</div><div class="note">A new pipe emits less per year of service than a liner.</div>`;
+    $('statWrap').style.opacity = t < 46 ? fade(t, 42, 45.8, 0.4) : t < 49.5 ? fade(t, 46, 49.3, 0.3) : fade(t, 49.5, 51.8, 0.3);
+  } else {
+    cap.style.opacity = 0;
+  }
+};
+window.ready = async function () {
+  // wait for the aerial tiles and the dashboard (all pipes solved, 3D scene built)
+  await Promise.all(imgs.map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+  for (let i = 0; i < 300; i++) {
+    const d = app()?.dashboard;
+    if (d && d.pipes.length && d.pipes.every(p => p.sol) && d.scene()) break;
+    await wait(200);
+  }
+  await wait(1500);
+  return true;
+};
+</script>
+</body>
+</html>

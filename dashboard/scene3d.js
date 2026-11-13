@@ -199,6 +199,13 @@ export async function initScene(container, { onPick, onStation, diameters }) {
       pipeMesh.material.depthTest = !seeThrough; pipeMesh.material.needsUpdate = true;
       surfaces.forEach(m => { m.material.opacity = m.userData.opacity * (seeThrough ? 0.45 : 1); });
     },
+    // camera on an orbit around the island centre: azimuth and elevation in degrees, distance as a fraction of the island size
+    setCamera(az, el, dist = 1.1) {
+      const a = az * Math.PI / 180, e = el * Math.PI / 180, d = R * dist;
+      camera.position.set(controls.target.x + d * Math.cos(e) * Math.sin(a), controls.target.y + d * Math.sin(e), controls.target.z + d * Math.cos(e) * Math.cos(a));
+      camera.lookAt(controls.target);
+      controls.update();
+    },
     show(layer, on) {
       if (layer === 'soil') { soilMeshes.forEach(m => { m.visible = on; }); return; }
       ({ buildings, trees: treeMesh, manholes: mh })[layer].visible = on;

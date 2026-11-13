@@ -32,6 +32,7 @@ header { display: flex; justify-content: space-between; align-items: center; gap
 main { flex: 1; overflow-y: auto; display: flex; justify-content: center; align-items: center; padding: 28px; }
 .slide { display: none; width: 100%; max-width: 1040px; gap: 28px; }
 .slide.active { display: grid; }
+.film { width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; background: #000; box-shadow: var(--shadow); display: block; }
 
 .grid { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 16px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 22px; display: grid; gap: 6px; align-content: start; }
@@ -71,6 +72,11 @@ nav button:disabled { opacity: .4; cursor: default; }
   <span class="eyebrow">The story · Opening · 0:20</span>
   <h1>Under Amsterdam lie roughly 3,900 km of sewer. Whether to defer, reline or replace a pipe is decided in disconnected steps, without taking the climate into account.</h1>
   <p class="src">Hack the Water Graph · Use Case 4 · Integrated intervention decision</p>
+</section>
+
+<section class="slide" data-title="The idea in one minute">
+  <span class="eyebrow">The idea in one minute</span>
+  <video class="film" src="../video/pitch.mp4?v=__BUILD__" poster="../video/poster.jpg?v=__BUILD__" controls playsinline preload="metadata"></video>
 </section>
 
 <section class="slide" data-title="Challenge">
@@ -166,6 +172,7 @@ function show(i) {
   [...dots.children].forEach((d, j) => d.classList.toggle('on', j === cur));
   document.getElementById('prev').disabled = cur === 0;
   document.getElementById('next').disabled = cur === slides.length - 1;
+  document.querySelectorAll('video.film').forEach(v => { if (!v.closest('.slide.active')) v.pause(); });
   history.replaceState(null, '', `#${cur + 1}`);
 }
 document.getElementById('prev').onclick = () => show(cur - 1);

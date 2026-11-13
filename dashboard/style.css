@@ -164,3 +164,6 @@ table.rank .badge { font-size: 10px; padding: 1px 6px; }
 .tour-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
 .tour-dots i.on { background: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .tour-spot, .tour-card { transition: none; } }
+
+/* film mode (recording the pitch video): no helper boxes */
+body.film .view-note, body.film .disclaimer, body.film .top-actions { display: none !important; }

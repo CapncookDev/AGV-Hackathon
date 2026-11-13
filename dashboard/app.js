@@ -447,11 +447,12 @@ async function main() {
 
   map.setView([52.378, 4.845], 15); // real fit happens when the 2D view is first shown
   window.dashboard = {
-    pipes, P,
+    pipes, P, setView, scene: () => scene3d,
     select(id) { const p = pipes.find(x => x.props.id === id); if (p) p.layer.fire('click'); return !!p; },
   };
   $('colorBy').onchange = restyle;
   solveAll();
+  if (new URLSearchParams(location.search).has('film')) document.body.classList.add('film');
   setView('3d'); // 3D island is the default view
 }
 
