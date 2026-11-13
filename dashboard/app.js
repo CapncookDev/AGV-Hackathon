@@ -109,6 +109,7 @@ function pipeColor(p) {
 }
 
 function restyle() {
+  if (!pipes.length || !pipes[0].sol) return;
   pipes.forEach(p => p.layer.setStyle({ color: pipeColor(p), weight: 1.5 + p.props.diameter_mm / 250, opacity: selected === p ? 1 : 0.9 }));
   if (selected) selected.layer.setStyle({ weight: 7 });
   if (scene3d) { scene3d.recolor(Object.fromEntries(pipes.map(p => [p.props.id, pipeColor(p)]))); scene3d.select(selected?.props.id); }
@@ -123,7 +124,7 @@ async function setView(view) {
   $('map').hidden = view !== 'map';
   $('scene3d').hidden = view !== '3d';
   $('viewNote').hidden = view !== '3d';
-  if (view === 'map') { map.invalidateSize(); return; }
+  if (view === 'map') { map.invalidateSize(); if (!map._fitted) { map.fitBounds(L.featureGroup(pipes.map(p => p.layer)).getBounds(), { padding: [10, 10] }); map._fitted = true; } return; }
   if (!scene3d) {
     $('viewNote').firstChild.textContent = 'Loading the 3D island… ';
     const { initScene } = await import('./scene3d.js');
@@ -167,50 +168,104 @@ function renderSummary() {
     st(keur(fv), 'invest now (FV)') + st(keur(sv), 'disruption (SV)') + st(keur(ev), 'MKI (EV)') + st(Math.round(clim / 50) + ' t', 'CO₂e of works') + st(keur(iv), 'value of acting now');
 }
 
-// ---------- selection panel ----------
-function renderSelection(p) {
-  const pr = p.props, s = p.sol, C = s.costs;
-  const split = componentSplit(pr, P, s);
-  const rows = ['defer', 'reline', 'replace'].map(a => {
-    const now = a === 'defer' ? { fv: POF[pr.cond] * C.fail.fv, sv: POF[pr.cond] * C.fail.sv, ev: POF[pr.cond] * C.fail.ev } : a === 'reline' ? C.rel : C.rep;
-    const ok = Number.isFinite(s.q[a]);
-    return `<tr class="${a === s.action ? 'best' : ''}"><td>${a}${a === 'defer' ? ' <span class="muted">(risk/yr)</span>' : ''}</td>` +
-      (ok ? `<td>${eur(now.fv)}</td><td>${eur(now.sv)}</td><td>${eur(now.ev)}</td><td>${keur(s.q[a])}</td>` : `<td colspan="4" class="muted">not possible</td>`) + '</tr>';
-  }).join('');
-  let delta = '';
-  if (s.action !== 'defer' && split.defer && split[s.action]) {
-    const d = c => split.defer[c] - split[s.action][c];
-    delta = `<dl class="kv"><dt>Financial (FV)</dt><dd>${eur(d('fv'))}</dd><dt>Social (SV)</dt><dd>${eur(d('sv'))}</dd><dt>Environmental (EV)</dt><dd>${eur(d('ev'))}</dd></dl>`;
-  }
-  const works = (pr.planned_works || []).map(w => `<li><b>${w.source}</b> ${w.name || ''} <span class="muted">${w.start || ''} → ${w.end || ''}${w.hindrance ? ' · ' + w.hindrance : ''}</span></li>`).join('');
-  const why = whyText(pr, s);
-  $('selection').innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-      <h2>Pipe ${pr.id}</h2><span class="badge ${s.action}">${s.action}</span>
-    </div>
-    <div class="muted" style="font-size:12px">${pr.kind} · ${pr.material} (${pr.material_raw || 'unknown'}) · Ø${pr.diameter_mm} mm · ${pr.length_m} m · ${pr.depth_m} m deep</div>
-    <dl class="kv">
-      <dt>Built</dt><dd>${pr.year_flag ? `<span class="tag">${pr.year_flag}</span>` : `${pr.year} (${pr.age} yr)`} · expected life ${pr.life} yr</dd>
-      <dt>Condition</dt><dd>class ${pr.cond} <span class="tag">synthetic</span> · P(fail) ${(POF[pr.cond] * 100).toFixed(1)} %/yr</dd>
-      <dt>Addresses ≤30 m</dt><dd>${pr.addresses_30m} → closure ${eur(C.dayPrice)}/day</dd>
-      <dt>Trees ≤4 m</dt><dd>${pr.trees_4m}${pr.protected_trees_10m ? ` · <b>${pr.protected_trees_10m} protected</b> ≤10 m` : ''}</dd>
-    </dl>
-    ${works ? `<div><h3>Planned works nearby</h3><ul class="works">${works}</ul>${C.coordWith ? `<p class="note">Replacement combined with: ${C.coordWith.name}</p>` : ''}</div>` : ''}
-    <div class="why">${why}</div>
-    <div><h3>Options</h3>
-      <table><thead><tr><th>Option</th><th>FV now</th><th>SV now</th><th>EV now</th><th>Lifetime</th></tr></thead><tbody>${rows}</tbody></table>
-      <p class="note">“Now” = cost of doing it today. “Lifetime” = expected discounted integrated cost (FV+SV+EV+risk) when the best policy is followed afterwards.</p>
-    </div>
-    ${s.action !== 'defer' ? `<div><h3>Integrated value of acting now</h3><div class="big">${eur(s.ivNow)}</div>${delta}<p class="note">Lifetime saving of ${s.action} today versus waiting a year, split into its parts.</p></div>` : ''}
-    <div><h3>Advice for this pipe per condition class</h3>
-      <div class="policy">${s.policy.map((a, i) => `<div class="${a} ${i + 1 === pr.cond ? 'cur' : ''}" title="${a}">${i + 1}</div>`).join('')}</div>
-      <p class="note">Outlined: current (synthetic) class. Colours: green defer, amber reline, red replace.</p>
-    </div>`;
+// ---------- pipe card (floating box in the map pane) ----------
+const THIS_YEAR = 2026, TODAY = '2026-11-13';
+const cap = a => a[0].toUpperCase() + a.slice(1);
+
+// When will this section need work? Now, or the expected year it ages into the first class where the advice is not "defer".
+function interventionTiming(pr, s) {
+  if (s.action !== 'defer') return { year: THIS_YEAR, action: s.action, cls: pr.cond, now: true };
+  const k = s.policy.findIndex((a, i) => i + 1 > pr.cond && a !== 'defer');
+  if (k < 0) return null;
+  const years = Math.round((k + 1 - pr.cond) * pr.life / 4); // Markov ageing: 4 class steps per expected life
+  return { year: THIS_YEAR + years, action: s.policy[k], cls: k + 1, now: false };
 }
 
-function whyText(pr, s) {
+function nextOpening(pr) {
+  const w = (pr.planned_works || []).filter(x => String(x.end || '9999') >= TODAY)
+    .sort((a, b) => String(a.start).localeCompare(String(b.start)))[0];
+  return w || null;
+}
+
+function renderSelection(p) {
+  const pr = p.props, s = p.sol, C = s.costs;
+  const t = interventionTiming(pr, s);
+  const act = t ? t.action : s.action;
+  const o = act === 'replace' ? C.rep : act === 'reline' ? C.rel : null;
+  const split = componentSplit(pr, P, s);
+  const d = c => (s.action !== 'defer' && split.defer && split[s.action]) ? split.defer[c] - split[s.action][c] : 0;
+  const risk = POF[pr.cond] * C.fail.total;
+  const open = nextOpening(pr);
+  const remaining = Math.max(0, pr.life - pr.age);
+
+  const whenTxt = !t ? 'No intervention needed within the model horizon'
+    : t.now ? `<b>Now (${t.year})</b>`
+    : `Expected around <b>${t.year}</b>, when it reaches class ${t.cls} → ${t.action}`;
+
+  const ivBlock = o ? `
+    <table class="fsv">
+      <thead><tr><th></th><th>FV</th><th>SV</th><th>EV</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr><td>${cap(act)} ${t && !t.now ? '<span class="muted">(today’s prices)</span>' : 'now'}</td><td>${eur(o.fv)}</td><td>${eur(o.sv)}</td><td>${eur(o.ev)}</td><td><b>${eur(o.total)}</b></td></tr>
+        ${s.action !== 'defer' ? `<tr class="best"><td>Value of acting now</td><td>${eur(d('fv'))}</td><td>${eur(d('sv'))}</td><td>${eur(d('ev'))}</td><td><b>${eur(s.ivNow)}</b></td></tr>` : ''}
+        <tr><td>Risk of waiting /yr</td><td>${eur(POF[pr.cond] * C.fail.fv)}</td><td>${eur(POF[pr.cond] * C.fail.sv)}</td><td>${eur(POF[pr.cond] * C.fail.ev)}</td><td>${eur(risk)}</td></tr>
+      </tbody>
+    </table>
+    <p class="note">FV = money Waternet spends · SV = disruption (closure days, trees) · EV = environmental cost (MKI) · all in €.</p>` : `<p class="muted">No intervention planned. Risk of waiting: ${eur(risk)} a year.</p>`;
+
+  const rows = ['defer', 'reline', 'replace'].map(a => {
+    const ok = Number.isFinite(s.q[a]);
+    return `<tr class="${a === s.action ? 'best' : ''}"><td>${a}</td>${ok ? `<td>${keur(s.q[a])}</td>` : '<td class="muted">not possible</td>'}</tr>`;
+  }).join('');
+
+  $('pipeCard').innerHTML = `
+    <div class="card-head">
+      <div><div class="eyebrow">Sewer section</div><h2>${pr.id} <span class="muted" style="font-weight:500">· ${pr.kind}</span></h2></div>
+      <span class="badge ${s.action}">${s.action}</span>
+      <button type="button" class="x" id="cardClose" aria-label="Close">×</button>
+    </div>
+    <section>
+      <h3>Current state</h3>
+      <dl class="grid">
+        <dt>Built</dt><dd>${pr.year_flag ? '<span class="tag">year unknown</span>' : `${pr.year} · ${pr.age} yr old`}</dd>
+        <dt>Material</dt><dd>${pr.material} <span class="muted">(${pr.material_raw || '–'})</span></dd>
+        <dt>Size</dt><dd>Ø${pr.diameter_mm} mm · ${pr.length_m} m long · ${pr.depth_m} m deep</dd>
+        <dt>Expected life</dt><dd>${pr.life} yr · ${remaining ? `~${remaining} yr left` : 'past expected life'}</dd>
+        <dt>Condition</dt><dd>class ${pr.cond} of 6 <span class="tag">synthetic</span> · ${(POF[pr.cond] * 100).toFixed(1)} % failure chance /yr</dd>
+        <dt>Surroundings</dt><dd>${pr.addresses_30m} addresses ≤30 m · ${pr.trees_4m} trees ≤4 m${pr.protected_trees_10m ? ` · <b>${pr.protected_trees_10m} protected</b> ≤10 m` : ''}</dd>
+      </dl>
+    </section>
+    <section>
+      <h3>Advice</h3>
+      <p class="when">${whenTxt}</p>
+      <div class="why">${whyText(pr, s, t)}</div>
+    </section>
+    <section>
+      <h3>Integrated value</h3>
+      ${ivBlock}
+    </section>
+    <section>
+      <h3>Street openings</h3>
+      <dl class="grid">
+        <dt>${open && String(open.start) < TODAY ? 'Ongoing' : 'Next planned'}</dt><dd>${open ? `${String(open.start) < TODAY ? 'until' : `<b>${open.start || '?'}</b> →`} <b>${open.end || '?'}</b> · ${open.source}: ${open.name || ''}${open.hindrance ? ` <span class="muted">(${open.hindrance})</span>` : ''}` : 'No planned works known on this street'}</dd>
+        <dt>By this model</dt><dd>${t ? `${t.year} · ${t.action}${t.action === 'replace' ? ' (street opened)' : ' (no excavation: liner pulled in through manholes)'}` : '–'}</dd>
+        ${C.coordWith && t && t.action === 'replace' && t.year <= +String(C.coordWith.end || '9999').slice(0, 4) ? `<dt>Combine</dt><dd>Replacement combined with ${C.coordWith.source} works: shared digging, less disruption</dd>`
+          : open && t && t.year > +String(open.end || '0').slice(0, 4) ? `<dt>Note</dt><dd>These works end before this section needs work, so they can't be combined; check whether bringing the work forward pays off.</dd>` : ''}
+      </dl>
+    </section>
+    <details>
+      <summary>Model detail: lifetime cost per option and advice per class</summary>
+      <table><thead><tr><th>Option</th><th>Lifetime integrated cost</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="policy" style="margin-top:8px">${s.policy.map((a, i) => `<div class="${a} ${i + 1 === pr.cond ? 'cur' : ''}" title="${a}">${i + 1}</div>`).join('')}</div>
+      <p class="note">Lifetime = expected discounted FV+SV+EV+risk with the best policy afterwards. Squares: advice per condition class 1–6, outlined = current.</p>
+    </details>`;
+  $('pipeCard').hidden = false;
+  $('cardClose').onclick = () => { $('pipeCard').hidden = true; selected = null; restyle(); };
+}
+
+function whyText(pr, s, t) {
   const C = s.costs, risk = POF[pr.cond] * C.fail.total;
-  if (s.action === 'defer') return `Waiting costs about <b>${eur(risk)}</b> a year in failure risk, less than any intervention is worth today. Re-inspect and decide again later.`;
+  if (s.action === 'defer') return `At class ${pr.cond} the failure risk costs about <b>${eur(risk)}</b> a year, less than any intervention is worth today.${t ? ` As the pipe ages the risk grows; around ${t.year} ${t.action} becomes the cheapest option.` : ''} Re-inspect to confirm the (synthetic) condition.`;
   const alt = s.action === 'reline' ? 'replace' : 'reline';
   const altTxt = Number.isFinite(s.q[alt]) ? `${alt} would cost ${keur(s.q[alt] - s.q[s.action])} more over its lifetime` : `${alt} is not possible here`;
   const coord = C.coordWith && s.action === 'replace' ? ' The street opens anyway for planned works, so digging is cheaper and causes little extra disruption.' : '';
@@ -291,13 +346,14 @@ async function main() {
     'Street works WIOR (orange = ongoing)': wiorLayer,
   }, { position: 'topleft', collapsed: false }).addTo(map);
 
-  map.fitBounds(L.featureGroup(pipes.map(p => p.layer)).getBounds(), { padding: [10, 10] });
+  map.setView([52.378, 4.845], 15); // real fit happens when the 2D view is first shown
   window.dashboard = {
     pipes, P,
     select(id) { const p = pipes.find(x => x.props.id === id); if (p) p.layer.fire('click'); return !!p; },
   };
   $('colorBy').onchange = restyle;
   solveAll();
+  setView('3d'); // 3D island is the default view
 }
 
 main();

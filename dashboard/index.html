@@ -24,12 +24,13 @@
 </header>
 <div class="layout">
   <div class="view">
-    <div id="map"></div>
-    <div id="scene3d" hidden></div>
+    <div id="map" hidden></div>
+    <div id="scene3d"></div>
+    <aside class="pipe-card" id="pipeCard" hidden></aside>
     <div class="view-switch seg" id="viewSwitch">
-      <button type="button" data-view="map" class="on">2D map</button><button type="button" data-view="3d">3D island</button>
+      <button type="button" data-view="3d" class="on">3D island</button><button type="button" data-view="map">2D map</button>
     </div>
-    <div class="view-note" id="viewNote" hidden>
+    <div class="view-note" id="viewNote">
       Depth below ground drawn 6× deeper, pipes 5× thicker. Drag to orbit, right-drag to pan, scroll to zoom. Click a pipe or the blue pumping station.
       <label><input type="checkbox" id="seeThrough" checked> X-ray: see pipes through the ground</label>
       <label><input type="checkbox" id="show-buildings" checked> Buildings</label>
@@ -39,14 +40,9 @@
   </div>
   <aside class="side">
     <section class="panel" id="selection">
-      <h2>Click a pipe</h2>
-      <p class="muted">Every sewer pipe has an advice: defer, reline or replace. Click one to see its condition, surroundings and the integrated value of acting now. Click the pumping station for its BIM model.</p>
+      <h2>How to read this</h2>
+      <p class="muted">Every sewer section has an advice: <b style="color:var(--defer)">defer</b>, <b style="color:var(--reline)">reline</b> or <b style="color:var(--replace)">replace</b>. Click a section on the map or the 3D island to open its card: current state, the advice and why, its FV / SV / EV, and when the street is expected to open next. Click the pumping station for its BIM model.</p>
     </section>
-    <details class="panel" open>
-      <summary><h2>Shadow prices &amp; assumptions</h2></summary>
-      <div class="controls" id="controls"></div>
-      <p class="note">Each input shows its source. Green = sourced, amber = method sourced but number estimated, red = our assumption to verify with Waternet. Condition classes are synthetic (Markov ageing from build year).</p>
-    </details>
     <details class="panel" open>
       <summary><h2>Map</h2></summary>
       <label class="ctl"><span>Colour pipes by</span>
@@ -60,6 +56,28 @@
       </label>
       <div class="legend" id="legend"></div>
       <p class="note">BIM: <a href="data/sewer.ifc" download>sewer network IFC 4.3 (true size)</a> · <a href="data/sewer_x4.ifc" download>pipes ×4</a> · <a href="#" id="openStation">pumping station model</a></p>
+    </details>
+    <details class="panel" id="assumptions">
+      <summary><h2>Assumptions</h2></summary>
+      <p class="note" style="margin:0">Every model input with its source. <span class="st sourced">sourced</span> official figure · <span class="st partly">partly sourced</span> method sourced, number estimated · <span class="st assumption">assumption</span> to verify with Waternet.</p>
+      <h3>Shadow prices &amp; costs</h3>
+      <div class="controls" id="controls"></div>
+      <h3>Fixed model assumptions</h3>
+      <table class="assume">
+        <tbody>
+          <tr><td>Condition class</td><td>Synthetic: Markov ageing from build year, one class worse with p = 4 / expected life per year (seeded per pipe)</td><td><span class="st assumption">assumption</span></td></tr>
+          <tr><td>Expected life</td><td>concrete 80 · PVC 70 · PE 70 · stoneware 100 · asbestos cement 60 · cast iron 80 yr</td><td><span class="st assumption">assumption</span></td></tr>
+          <tr><td>Failure chance /yr</td><td>class 1–6: 0.1 · 0.3 · 1 · 3 · 8 · 20 %</td><td><span class="st assumption">assumption</span></td></tr>
+          <tr><td>Life gained</td><td>reline → class 2 (class 3 if relined at 5–6), liner lasts ~25 yr · replace → class 1</td><td><span class="st partly">partly sourced</span></td></tr>
+          <tr><td>Failure cost</td><td>1.5 × planned replacement + damage (× Ø/300) + 2 × closure days + MKI</td><td><span class="st assumption">assumption</span></td></tr>
+          <tr><td>Closure days</td><td>replace 3 + length / 8 m per day · reline 1 + length / 80 (WIOR sewer works: median 14 days)</td><td><span class="st partly">partly sourced</span></td></tr>
+          <tr><td>MKI per option</td><td>pipe / liner mass, trench soil, sand, asphalt, diesel, demolition × Ecoinvent factors in the data set</td><td><span class="st sourced">sourced</span></td></tr>
+          <tr><td>Tree proximity</td><td>Horizontal distance on the map from the trunk (tree register point) to the pipe centre line: ≤ 4 m counts as affected by digging, ≤ 10 m for protected trees. Depth, crown and root spread are not modelled.</td><td><span class="st assumption">assumption</span></td></tr>
+          <tr><td>Addresses</td><td>BAG address points within 30 m horizontal distance of the pipe centre line</td><td><span class="st partly">partly sourced</span></td></tr>
+          <tr><td>Combining works</td><td>planned street works within the horizon: replace −30 % FV, −80 % closure SV</td><td><span class="st assumption">assumption</span></td></tr>
+          <tr><td>3D view</td><td>depth drawn 6× deeper, pipes 5× thicker; building heights true (3DBAG)</td><td><span class="st sourced">visual only</span></td></tr>
+        </tbody>
+      </table>
     </details>
     <div class="disclaimer">Prototype built during Hack the Water Graph (Amsterdam, 13 November 2026). Not an official Waternet or AGV product. Condition scores are synthetic and costs are assumptions; results are estimates.</div>
   </aside>

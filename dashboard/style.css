@@ -99,3 +99,20 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .st.sourced { background: #e3f1e7; color: #2f6b45; }
 .st.partly { background: #fdf1d9; color: #8a5a00; }
 .st.assumption { background: var(--danger-bg); color: var(--danger-fg); }
+
+.pipe-card { position: absolute; top: 56px; left: 56px; z-index: 1100; width: min(400px, calc(100% - 80px)); max-height: calc(100% - 72px); overflow-y: auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: 0 10px 40px rgba(27,36,48,.18); padding: 14px 16px; display: grid; gap: 12px; }
+.pipe-card .card-head { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center; }
+.pipe-card .x { border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: var(--muted); padding: 0 4px; }
+.pipe-card section { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--line); }
+.pipe-card h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+.pipe-card dl.grid { display: grid; grid-template-columns: 104px 1fr; gap: 4px 10px; margin: 0; font-size: 13px; }
+.pipe-card dl.grid dt { color: var(--muted); } .pipe-card dl.grid dd { margin: 0; }
+.pipe-card .when { margin: 0; font-size: 14px; }
+.pipe-card table.fsv td:first-child { white-space: nowrap; }
+.pipe-card details summary { cursor: pointer; font-size: 12px; color: var(--accent); font-weight: 600; }
+@media (max-width: 600px) { .pipe-card { left: 8px; top: 52px; width: calc(100% - 16px); } }
+
+table.assume td { text-align: left; vertical-align: top; font-size: 11.5px; padding: 6px 4px; }
+table.assume td:first-child { font-weight: 600; white-space: nowrap; }
+#assumptions h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-top: 6px; }
