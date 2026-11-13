@@ -91,7 +91,7 @@ function solveAll() {
       p.sol = solvePipe(p.props, P, p.sol?.V);
     }
     if (i < pipes.length) setTimeout(step, 0);
-    else { restyle(); renderSummary(); if (selected) renderSelection(selected); }
+    else { restyle(); renderSummary(); renderLimitations(); if (selected) renderSelection(selected); }
   };
   step();
 }
@@ -172,6 +172,36 @@ function renderLegend() {
   else if (by === 'age') items = [['< 20 yr', AGE_BUCKETS[0][1]], ['20–39', AGE_BUCKETS[1][1]], ['40–59', AGE_BUCKETS[2][1]], ['60–79', AGE_BUCKETS[3][1]], ['80+', AGE_BUCKETS[4][1]]];
   else items = [['no gain (defer)', '#c9d3da'], ['< €5k', '#f2c66d'], ['€5–25k', '#e08a2c'], ['€25–100k', '#c4512a'], ['> €100k', '#7e1d12']];
   $('legend').innerHTML = items.map(([k, col]) => `<span style="--c:${col}">${k}</span>`).join('');
+}
+
+// ---------- limitations: both cost sources side by side + age leakage ----------
+const COST_SOURCES = { barendrecht: { repMul: 1, relMul: 1, label: 'Barendrecht 2023' }, vmm: { repMul: 3.8, relMul: 1.48, label: 'VMM 2018 (indexed)' } };
+function renderLimitations() {
+  const rows = Object.values(COST_SOURCES).map(src => {
+    const PP = { ...P, repMul: src.repMul, relMul: src.relMul };
+    const n = { defer: 0, reline: 0, replace: 0 }; let fv = 0; const acts = [];
+    for (const p of pipes) {
+      const sol = solvePipe(p.props, PP);
+      n[sol.action]++; acts.push(sol.action);
+      if (sol.action !== 'defer') fv += (sol.action === 'replace' ? sol.costs.rep.fv : sol.costs.rel.fv);
+    }
+    return { src, n, fv, acts };
+  });
+  const same = rows[0].acts.filter((a, i) => a === rows[1].acts[i]).length;
+  // leakage: best single age/life threshold that reproduces act vs defer
+  const act = pipes.map(p => p.sol.action !== 'defer'), rel = pipes.map(p => p.props.age / p.props.life);
+  let best = 0, bt = 0;
+  for (let t = 0.2; t < 1.6; t += 0.01) { let ok = 0; rel.forEach((r, i) => { if ((r >= t) === act[i]) ok++; }); if (ok > best) { best = ok; bt = t; } }
+  const pct = x => Math.round(100 * x / pipes.length) + ' %';
+  $('limitations').innerHTML = `
+    <h3>1 · Cost source decides how, not whether</h3>
+    <table><thead><tr><th>Cost source</th><th>Defer</th><th>Reline</th><th>Replace</th><th>Invest now</th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td>${r.src.label}</td><td>${r.n.defer}</td><td>${r.n.reline}</td><td>${r.n.replace}</td><td>${keur(r.fv)}</td></tr>`).join('')}
+    </tbody></table>
+    <p class="note">${pct(same)} of sections get the same advice under both. The difference is mostly replace ↔ reline. Fix: Waternet’s own Maximo costs per diameter.</p>
+    <h3>2 · Synthetic condition leaks age and material</h3>
+    <p class="note" style="margin:0">The condition class is simulated from age and material, and the decision model also uses age and material (expected life, ageing). The rule “act once a pipe is past ${Math.round(bt * 100)} % of its expected life” reproduces <b>${pct(best)}</b> of the act / defer advice, so the class adds little independent information. Fix: real NEN inspection scores replace the synthetic class; the model stays the same.</p>
+    <p class="note"><a href="slides/limitations.html" target="_blank" rel="noopener">Open as presentation slide →</a></p>`;
 }
 
 function renderSummary() {

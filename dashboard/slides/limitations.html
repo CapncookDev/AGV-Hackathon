@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Limitations · Sewer Renewal Model</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  :root { --bg: #f2f0eb; --card: #fff; --fg: #1b2430; --muted: #5f6b78; --line: #e1ddd4; --accent: #0b6bcb;
+          --defer: #4f7a5e; --reline: #c4840a; --replace: #b0432d; --soft: #e6f0fa; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #1b2430; overflow: hidden; }
+  body { font-family: Inter, system-ui, sans-serif; color: var(--fg); }
+  /* fixed 1920×1080 canvas, scaled to fit the window */
+  .slide { width: 1920px; height: 1080px; background: var(--bg); padding: 60px 88px; display: grid; grid-template-rows: auto 1fr auto; gap: 32px;
+           position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(var(--s, 1)); }
+  .eyebrow { font-weight: 700; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 8px 0 0; font-size: 56px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; min-height: 0; }
+  .card { background: var(--card); border-radius: 28px; box-shadow: 0 2px 4px rgba(27,36,48,.04), 0 16px 40px rgba(27,36,48,.07); padding: 36px 44px; display: grid; gap: 18px; align-content: start; min-height: 0; }
+  .num { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 800; font-size: 24px; margin-right: 14px; vertical-align: 4px; }
+  h2 { margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -.01em; }
+  p { margin: 0; font-size: 21px; line-height: 1.4; color: var(--muted); }
+  p b { color: var(--fg); }
+  .fix { background: var(--soft); border-radius: 18px; padding: 14px 20px; font-size: 20px; color: var(--fg); line-height: 1.4; }
+  .fix b { color: var(--accent); }
+  .big { font-size: 48px; font-weight: 800; color: var(--accent); letter-spacing: -.02em; line-height: 1; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .stats div span { display: block; font-size: 20px; color: var(--muted); margin-top: 6px; }
+  svg text { font-family: Inter, system-ui, sans-serif; }
+  footer { display: flex; justify-content: space-between; align-items: center; font-size: 22px; color: var(--muted); }
+  footer b { color: var(--fg); }
+</style>
+</head>
+<body>
+<div class="slide" id="slide">
+  <header>
+    <div class="eyebrow">Hack the Water Graph · UC4 · Limitations</div>
+    <h1>What the model can’t see yet</h1>
+  </header>
+
+  <div class="cols">
+    <section class="card">
+      <h2><span class="num">1</span>Cost data decides <i>how</i>, not <i>whether</i></h2>
+      <svg viewBox="0 0 760 250" height="220" role="img" aria-label="Advice per cost source: Barendrecht 2023 gives 1,295 defer, 86 reline, 423 replace; VMM 2018 gives 1,272 defer, 312 reline, 220 replace.">
+        <!-- bars scaled to 1,804 sections over 560 px -->
+        <text x="0" y="52" font-size="22" font-weight="700" fill="#1b2430">Barendrecht 2023</text>
+        <text x="0" y="78" font-size="18" fill="#5f6b78">€5.2M now</text>
+        <rect x="200" y="28" width="402" height="56" rx="8" fill="#4f7a5e"/>
+        <rect x="602" y="28" width="27" height="56" fill="#c4840a"/>
+        <rect x="629" y="28" width="131" height="56" rx="8" fill="#b0432d"/>
+        <text x="216" y="64" font-size="22" font-weight="700" fill="#fff">1,295 defer</text>
+        <text x="694" y="64" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">423</text>
+        <text x="0" y="172" font-size="22" font-weight="700" fill="#1b2430">VMM 2018</text>
+        <text x="0" y="198" font-size="18" fill="#5f6b78">indexed · €11.8M now</text>
+        <rect x="200" y="148" width="395" height="56" rx="8" fill="#4f7a5e"/>
+        <rect x="595" y="148" width="97" height="56" fill="#c4840a"/>
+        <rect x="692" y="148" width="68" height="56" rx="8" fill="#b0432d"/>
+        <text x="216" y="184" font-size="22" font-weight="700" fill="#fff">1,272 defer</text>
+        <text x="643" y="184" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">312</text>
+        <text x="726" y="184" font-size="22" font-weight="700" fill="#fff" text-anchor="middle">220</text>
+        <text x="200" y="240" font-size="18" fill="#5f6b78"><tspan fill="#4f7a5e" font-weight="700">■ defer</tspan>   <tspan fill="#c4840a" font-weight="700">■ reline</tspan>   <tspan fill="#b0432d" font-weight="700">■ replace</tspan></text>
+      </svg>
+      <div class="stats">
+        <div><div class="big">87 %</div><span>same advice under both cost sources</span></div>
+        <div><div class="big">197</div><span>sections flip from replace to reline</span></div>
+      </div>
+      <p>No sewer costs in the data (Maximo cost fields are empty), so we use published unit prices. Their reline-to-replace ratio steers the choice.</p>
+      <div class="fix"><b>Fix:</b> Waternet’s own Maximo replacement and relining costs per diameter.</div>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">2</span>Synthetic condition leaks age &amp; material</h2>
+      <svg viewBox="0 0 760 250" height="220" role="img" aria-label="Age and material feed the synthetic condition class, which drives failure risk and the advice; age and material also feed expected life and ageing in the decision model directly. Real inspections would replace the synthetic class.">
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5f6b78"/></marker></defs>
+        <rect x="0" y="95" width="170" height="70" rx="14" fill="#e6f0fa" stroke="#0b6bcb" stroke-width="2"/>
+        <text x="85" y="126" font-size="22" font-weight="700" text-anchor="middle" fill="#1b2430">Age +</text>
+        <text x="85" y="152" font-size="22" font-weight="700" text-anchor="middle" fill="#1b2430">material</text>
+        <rect x="250" y="10" width="220" height="70" rx="14" fill="#fff" stroke="#c4840a" stroke-width="2" stroke-dasharray="6 5"/>
+        <text x="360" y="40" font-size="20" font-weight="700" text-anchor="middle" fill="#1b2430">Synthetic</text>
+        <text x="360" y="64" font-size="20" font-weight="700" text-anchor="middle" fill="#1b2430">condition 1–6</text>
+        <rect x="250" y="180" width="220" height="70" rx="14" fill="#fff" stroke="#5f6b78" stroke-width="2"/>
+        <text x="360" y="210" font-size="20" font-weight="700" text-anchor="middle" fill="#1b2430">Expected life,</text>
+        <text x="360" y="234" font-size="20" font-weight="700" text-anchor="middle" fill="#1b2430">ageing speed</text>
+        <rect x="590" y="95" width="170" height="70" rx="14" fill="#1b2430"/>
+        <text x="675" y="138" font-size="24" font-weight="800" text-anchor="middle" fill="#fff">Advice</text>
+        <path d="M170 115 L250 50" stroke="#5f6b78" stroke-width="2.5" fill="none" marker-end="url(#ah)"/>
+        <path d="M170 145 L250 210" stroke="#5f6b78" stroke-width="2.5" fill="none" marker-end="url(#ah)"/>
+        <path d="M470 45 L590 115" stroke="#5f6b78" stroke-width="2.5" fill="none" marker-end="url(#ah)"/>
+        <path d="M470 215 L590 145" stroke="#5f6b78" stroke-width="2.5" fill="none" marker-end="url(#ah)"/>
+      </svg>
+      <div class="stats">
+        <div><div class="big">0.71</div><span>correlation of condition with age ÷ expected life</span></div>
+        <div><div class="big">85 %</div><span>of act / defer advice reproduced by “act past 69 % of expected life”</span></div>
+      </div>
+      <p>No inspections in the data, so the condition class is simulated from age and material, the same inputs the decision uses. <b>Whether</b> to act is mostly an age rule.</p>
+      <div class="fix"><b>Fix:</b> real camera-inspection scores (NEN-EN 13508-2 → class 1–6) replace the synthetic class. Same model, no loop.</div>
+    </section>
+  </div>
+
+  <footer>
+    <span>To make it decision-grade: <b>Maximo costs</b> · <b>inspection scores</b> · <b>failure history</b></span>
+    <span>Prototype · synthetic condition · estimates</span>
+  </footer>
+</div>
+<script>
+  const fit = () => { const s = Math.min(innerWidth / 1920, innerHeight / 1080); document.getElementById('slide').style.setProperty('--s', s); };
+  addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

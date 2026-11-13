@@ -127,3 +127,6 @@ table.assume td:first-child { font-weight: 600; white-space: nowrap; }
 .chip.defer.on { background: var(--defer); border-color: var(--defer); } .chip.reline.on { background: var(--reline); border-color: var(--reline); } .chip.replace.on { background: var(--replace); border-color: var(--replace); }
 .pipe-card .threshold { margin: 0; font-size: 13px; color: var(--muted); }
 @media (max-width: 700px) { .filter-bar { top: 52px; left: 12px; transform: none; } }
+
+.limits h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-top: 4px; }
+.limits { display: grid; gap: 8px; }
