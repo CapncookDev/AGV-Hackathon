@@ -67,80 +67,80 @@ nav button:disabled { opacity: .4; cursor: default; }
 </header>
 
 <main>
-<section class="slide" data-title="Question">
-  <span class="eyebrow">Hack the Water Graph · Use Case 4</span>
-  <h1>How does valuing the financial, social and environmental costs of sewer works together change whether Waternet should defer, reline or replace a pipe?</h1>
-  <div class="grid">
-    <div class="card"><span class="big">1,804</span><span class="muted">sewer sections, one advice each</span></div>
-    <div class="card"><span class="big"><span class="r">153</span> · <span class="x">441</span></span><span class="muted">reline · replace now</span></div>
-    <div class="card"><span class="big">991 t</span><span class="muted">CO₂e of those works, priced at €116/t</span></div>
-  </div>
+<section class="slide" data-title="Opening">
+  <span class="eyebrow">The story · Opening · 0:20</span>
+  <h1>Under Bos en Lommer lie 40 km of sewer. One in four pipes rests on sinking peat, and today nobody can say which to dig up, which to line, and what that choice costs the climate.</h1>
+  <p class="src">Hack the Water Graph · Use Case 4 · Integrated intervention decision</p>
 </section>
 
-<section class="slide" data-title="Problem">
-  <span class="eyebrow">The problem</span>
-  <h2>Pipe decisions are made in disconnected checks.</h2>
+<section class="slide" data-title="Challenge">
+  <span class="eyebrow">The story · The challenge · 0:40</span>
+  <h2>Waternet decides pipe by pipe, with the facts spread over systems that don’t talk.</h2>
   <div class="grid">
-    <div class="card"><span class="big">28</span><span class="muted">information sources</span></div>
-    <div class="card"><span class="big">5</span><span class="muted">risks judged by feel</span></div>
-    <div class="card"><span class="big">0</span><span class="muted">places carbon is counted</span></div>
+    <div class="card"><span class="big">28</span><span class="muted">information sources behind one sewer decision: GIS, Maximo, IFC, EPDs, inspections</span></div>
+    <div class="card"><span class="big">0</span><span class="muted">condition scores in the data: inspections are not in the graph yet</span></div>
+    <div class="card"><span class="big">0</span><span class="muted">places where disruption and carbon are priced next to cost</span></div>
   </div>
-  <p class="src">van Riel, TU Delft / STOWA 2016 · UC4 brief</p>
+  <p class="src">van Riel, TU Delft / STOWA 2016 · UC4 brief · Waternet data set</p>
 </section>
 
-<section class="slide" data-title="Approach">
-  <span class="eyebrow">Our approach</span>
-  <h2>One model, one advice per pipe.</h2>
+<section class="slide" data-title="Idea">
+  <span class="eyebrow">The story · Our idea · 0:20</span>
+  <div class="answer">We help Waternet decide, for every sewer section, whether to <span class="d">defer</span>, <span class="r">reline</span> or <span class="x">replace</span>, by putting money, disruption and carbon in one euro value and letting a risk model choose the moment.</div>
   <div class="grid" style="--n:4">
-    <div class="card"><span class="step">1</span><b>Knowledge graph</b><span class="muted">One SPARQL query on the W-OTL graph: 1,804 pipes with material, size, depth</span></div>
-    <div class="card"><span class="step">2</span><b>Three values</b><span class="muted">Financial · social (closures, trees) · environmental (MKI, CO₂)</span></div>
-    <div class="card"><span class="step">3</span><b>Risk over time</b><span class="muted">Condition 1–6, Markov model, faster ageing on peat</span></div>
-    <div class="card"><span class="step">4</span><b>Advice</b><span><span class="d">defer</span> · <span class="r">reline</span> · <span class="x">replace</span></span></div>
+    <div class="card"><span class="step">1</span><b>Knowledge graph</b><span class="muted">One SPARQL query: 1,804 pipes</span></div>
+    <div class="card"><span class="step">2</span><b>Three values</b><span class="muted">Financial · social · environmental, in €</span></div>
+    <div class="card"><span class="step">3</span><b>Risk over time</b><span class="muted">Condition 1–6, Markov model, soil</span></div>
+    <div class="card"><span class="step">4</span><b>Advice + why</b><span class="muted">Per pipe, in a browser and in IFC</span></div>
   </div>
-  <p class="src">Data: W-OTL graph (SPARQL) · Madaster API (NMD pipes &amp; liners) · ecoinvent · TNO GeoTOP soil · Maximo + IFC · trees, addresses · street works (WIOR, Stadsregie, NDW) · Barendrecht unit costs</p>
-</section>
-
-<section class="slide" data-title="Subsurface">
-  <span class="eyebrow">What lies underneath</span>
-  <h2>Peat under the pipes makes them sink, and digging dearer.</h2>
-  <div class="grid">
-    <div class="card"><span class="big x">491</span><span class="muted">pipes on ≥ 2.5 m of peat and clay (TNO GeoTOP): life −20 %, digging +20 %</span></div>
-    <div class="card"><span class="big">779</span><span class="muted">on 1.5–2.5 m: life −10 %, digging +10 %</span></div>
-    <div class="card"><span class="big">1</span><span class="muted">open model: pipes and soil layers together in IFC 4.3 (IfcGeotechnicalStratum)</span></div>
-  </div>
-  <p class="src">Soil from TNO GeoTOP v1.6 (100 × 100 × 0.5 m). Settlement effects are our assumptions.</p>
-</section>
-
-<section class="slide" data-title="Findings">
-  <span class="eyebrow">What we found</span>
-  <h2>Carbon shifts a few decisions. Cost and liner life shift many.</h2>
-  <div class="grid">
-    <div class="card"><span class="big">6.6%</span><span class="muted">of pipes change advice between €0 and €2,000 per tonne CO₂</span></div>
-    <div class="card"><span class="big">153 → 349</span><span class="muted">relines: Dutch unit costs (Barendrecht) vs dense-urban costs (VMM)</span></div>
-    <div class="card"><span class="big">15 → 212</span><span class="muted">relines when a liner lasts 30 instead of 15 years</span></div>
-  </div>
-</section>
-
-<section class="slide" data-title="Limits">
-  <span class="eyebrow">Limitations</span>
-  <h2>Weakest inputs: cost and condition.</h2>
-  <div class="grid" style="--n:2">
-    <div class="card"><b>What we lacked</b><ul class="muted"><li>Real Maximo costs: the cost source changes how we intervene for 11% of pipes</li><li>Inspection scores: condition is simulated from age and material, so “act past 69% of expected life” already reproduces 84% of the advice</li><li>Failure records</li></ul></div>
-    <div class="card"><b>What Waternet can plug in</b><ul class="muted"><li>Own project costs per diameter</li><li>NEN 2767 condition scores from camera inspections</li><li>Internal CO₂ price and relining policy</li></ul></div>
-  </div>
-  <p class="src"><a href="../slides/limitations.html" target="_blank" rel="noopener">Limitations in detail →</a></p>
+  <p class="src">Team: [names · who brings what · who says which part]</p>
 </section>
 
 <section class="slide" data-title="Demo">
-  <div class="title-logos"><img src="img/agv-logo.svg" alt="Waterschap Amstel, Gooi en Vecht"><img src="img/waternet-logo.svg" alt="Waternet"></div>
-  <h2>Built for Waternet's real decision.</h2>
-  <div class="grid" style="--n:4">
-    <div class="card"><b>Innovation</b><span class="muted">Carbon inside the lifetime decision</span></div>
-    <div class="card"><b>Impact</b><span class="muted">One advice per pipe, in a browser</span></div>
-    <div class="card"><b>Technical</b><span class="muted">SPARQL on the real graph, IFC 4.3 with soil, every assumption sourced</span></div>
-    <div class="card"><b>Story</b><span class="muted">Deck, then live demo</span></div>
+  <span class="eyebrow">The proof · Demo · 1:00</span>
+  <h2>The result first: one advice per pipe.</h2>
+  <div class="grid">
+    <div class="card"><span class="big">1,804</span><span class="muted">sewer sections in the 3D island</span></div>
+    <div class="card"><span class="big"><span class="r">153</span> · <span class="x">441</span></span><span class="muted">reline · replace now</span></div>
+    <div class="card"><span class="big">€6.4M</span><span class="muted">to invest now, with 991 t CO₂e and €2.7M disruption</span></div>
   </div>
-  <a class="cta" href="../">Open the live demo →</a>
+  <div class="card"><b>Notice</b><ul class="muted"><li>Colours are the advice; the peat under the island is real soil data</li><li>Click a pipe: state, advice and why, FV · SV · EV, next street opening</li><li>Switch the cost source: the choice between reline and replace shifts</li></ul></div>
+  <a class="cta" href="../" target="_blank" rel="noopener">Open the live demo →</a>
+</section>
+
+<section class="slide" data-title="Under the hood">
+  <span class="eyebrow">The proof · Under the hood · 1:00</span>
+  <h2>What is real, what is inferred, what is synthetic.</h2>
+  <div class="grid" style="--n:4">
+    <div class="card"><b class="d">Real</b><ul class="muted"><li>W-OTL graph via SPARQL</li><li>NMD pipes &amp; liners (Madaster API)</li><li>ecoinvent MKI</li><li>TNO GeoTOP soil</li><li>BAG addresses, trees</li><li>Street works: WIOR, Stadsregie, NDW</li></ul></div>
+    <div class="card"><b class="r">Inferred</b><ul class="muted"><li>Unit costs from Barendrecht 2023</li><li>Closure days from WIOR</li><li>Settlement effect of peat</li><li>Failure cost</li></ul></div>
+    <div class="card"><b class="x">Synthetic</b><ul class="muted"><li>Condition class 1–6 from age and material</li><li>Failure rates per class</li></ul></div>
+    <div class="card"><b>Doesn’t work yet</b><ul class="muted"><li>No Maximo costs: cost source changes 11% of advice</li><li>“Act past 69% of life” reproduces 84% of advice</li><li>No failure history</li></ul></div>
+  </div>
+  <p class="src"><a href="../slides/limitations.html" target="_blank" rel="noopener">Limitations in detail →</a> · <a href="../data/sewer.ifc">IFC 4.3 model with soil layers</a></p>
+</section>
+
+<section class="slide" data-title="What it changes">
+  <span class="eyebrow">The proof · What it changes · 0:50</span>
+  <h2>Pricing carbon does not make relining win. It makes replacing win.</h2>
+  <div class="grid">
+    <div class="card"><span class="big">1.6 vs 3</span><span class="muted">kg CO₂e per metre per year of service: new concrete pipe (~70 yr) vs liner (~25 yr)</span></div>
+    <div class="card"><span class="big"><span class="r">153 → 51</span></span><span class="muted">relines as the CO₂ price rises from €116 to €2,000 per tonne</span></div>
+    <div class="card"><span class="big">27%</span><span class="muted">of pipes on thick peat: they age faster and cost more to dig up</span></div>
+  </div>
+  <p class="muted">The number Waternet can now know: the lifetime value, per pipe, of acting now instead of waiting a year, split into money, disruption and carbon.</p>
+</section>
+
+<section class="slide" data-title="First step">
+  <span class="eyebrow">The proof · First step · 0:50</span>
+  <h2>On Monday: plug in what Waternet already has.</h2>
+  <div class="grid">
+    <div class="card"><span class="step">1</span><b>Maximo costs</b><span class="muted">Own relining and replacement costs per diameter replace the published unit prices.</span></div>
+    <div class="card"><span class="step">2</span><b>Inspect the 441</b><span class="muted">Camera inspections (NEN 2767) on the pipes advised for replacement replace the synthetic condition.</span></div>
+    <div class="card"><span class="step">3</span><b>Plan with the city</b><span class="muted">Match replacements to Stadsregie and NDW works, so the street opens once.</span></div>
+  </div>
+  <div class="answer">So the next time a street in Bos en Lommer opens, Waternet knows which pipe to dig, which to line, and what that costs the climate.</div>
+  <div class="title-logos"><img src="img/agv-logo.svg" alt="Waterschap Amstel, Gooi en Vecht"><img src="img/waternet-logo.svg" alt="Waternet"></div>
 </section>
 </main>
 
