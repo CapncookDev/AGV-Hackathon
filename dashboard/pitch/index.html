@@ -71,9 +71,9 @@ nav button:disabled { opacity: .4; cursor: default; }
   <span class="eyebrow">Hack the Water Graph · Use Case 4</span>
   <h1>How does valuing the financial, social and environmental costs of sewer works together change whether Waternet should defer, reline or replace a pipe?</h1>
   <div class="grid">
-    <div class="card"><span class="big">1,722</span><span class="muted">pipes, one advice each</span></div>
-    <div class="card"><span class="big"><span class="r">301</span> · <span class="x">214</span></span><span class="muted">reline · replace now</span></div>
-    <div class="card"><span class="big">570 t</span><span class="muted">CO₂e, priced at €116/t</span></div>
+    <div class="card"><span class="big">1,804</span><span class="muted">sewer sections, one advice each</span></div>
+    <div class="card"><span class="big"><span class="r">153</span> · <span class="x">441</span></span><span class="muted">reline · replace now</span></div>
+    <div class="card"><span class="big">991 t</span><span class="muted">CO₂e of those works, priced at €116/t</span></div>
   </div>
 </section>
 
@@ -92,31 +92,43 @@ nav button:disabled { opacity: .4; cursor: default; }
   <span class="eyebrow">Our approach</span>
   <h2>One model, one advice per pipe.</h2>
   <div class="grid" style="--n:4">
-    <div class="card"><span class="step">1</span><b>Knowledge graph</b><span class="muted">Waternet pipes, materials, BIM</span></div>
-    <div class="card"><span class="step">2</span><b>Three values</b><span class="muted">Financial · social · environmental</span></div>
-    <div class="card"><span class="step">3</span><b>Risk over time</b><span class="muted">Condition 1–6, Markov model</span></div>
+    <div class="card"><span class="step">1</span><b>Knowledge graph</b><span class="muted">One SPARQL query on the W-OTL graph: 1,804 pipes with material, size, depth</span></div>
+    <div class="card"><span class="step">2</span><b>Three values</b><span class="muted">Financial · social (closures, trees) · environmental (MKI, CO₂)</span></div>
+    <div class="card"><span class="step">3</span><b>Risk over time</b><span class="muted">Condition 1–6, Markov model, faster ageing on peat</span></div>
     <div class="card"><span class="step">4</span><b>Advice</b><span><span class="d">defer</span> · <span class="r">reline</span> · <span class="x">replace</span></span></div>
   </div>
-  <p class="src">Data: W-OTL graph · ecoinvent · Maximo + IFC · trees, addresses, street works · VMM costs · NMD CO₂ price</p>
+  <p class="src">Data: W-OTL graph (SPARQL) · Madaster API (NMD pipes &amp; liners) · ecoinvent · TNO GeoTOP soil · Maximo + IFC · trees, addresses · street works (WIOR, Stadsregie, NDW) · Barendrecht unit costs</p>
+</section>
+
+<section class="slide" data-title="Subsurface">
+  <span class="eyebrow">What lies underneath</span>
+  <h2>Peat under the pipes makes them sink, and digging dearer.</h2>
+  <div class="grid">
+    <div class="card"><span class="big x">491</span><span class="muted">pipes on ≥ 2.5 m of peat and clay (TNO GeoTOP): life −20 %, digging +20 %</span></div>
+    <div class="card"><span class="big">779</span><span class="muted">on 1.5–2.5 m: life −10 %, digging +10 %</span></div>
+    <div class="card"><span class="big">1</span><span class="muted">open model: pipes and soil layers together in IFC 4.3 (IfcGeotechnicalStratum)</span></div>
+  </div>
+  <p class="src">Soil from TNO GeoTOP v1.6 (100 × 100 × 0.5 m). Settlement effects are our assumptions.</p>
 </section>
 
 <section class="slide" data-title="Findings">
   <span class="eyebrow">What we found</span>
-  <h2>Carbon alone rarely flips a decision. Cost and liner life do.</h2>
+  <h2>Carbon shifts a few decisions. Cost and liner life shift many.</h2>
   <div class="grid">
-    <div class="card"><span class="big">&lt;1%</span><span class="muted">of pipes change advice from €0 to €2,000 per tonne CO₂</span></div>
-    <div class="card"><span class="big">15 → 301</span><span class="muted">relines once real unit costs are used</span></div>
-    <div class="card"><span class="big">Liner life</span><span class="muted">decides reline vs replace, not the CO₂ price</span></div>
+    <div class="card"><span class="big">6.6%</span><span class="muted">of pipes change advice between €0 and €2,000 per tonne CO₂</span></div>
+    <div class="card"><span class="big">153 → 349</span><span class="muted">relines: Dutch unit costs (Barendrecht) vs dense-urban costs (VMM)</span></div>
+    <div class="card"><span class="big">15 → 212</span><span class="muted">relines when a liner lasts 30 instead of 15 years</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Limits">
   <span class="eyebrow">Limitations</span>
-  <h2>Weakest inputs: cost and risk.</h2>
+  <h2>Weakest inputs: cost and condition.</h2>
   <div class="grid" style="--n:2">
-    <div class="card"><b>What we lacked</b><ul class="muted"><li>Real Maximo costs for relining and replacing</li><li>Inspection scores (condition is simulated)</li><li>Failure records</li></ul></div>
-    <div class="card"><b>What Waternet can plug in</b><ul class="muted"><li>Own project costs</li><li>NEN 2767 condition scores</li><li>Internal CO₂ price and relining policy</li></ul></div>
+    <div class="card"><b>What we lacked</b><ul class="muted"><li>Real Maximo costs: the cost source changes how we intervene for 11% of pipes</li><li>Inspection scores: condition is simulated from age and material, so “act past 69% of expected life” already reproduces 84% of the advice</li><li>Failure records</li></ul></div>
+    <div class="card"><b>What Waternet can plug in</b><ul class="muted"><li>Own project costs per diameter</li><li>NEN 2767 condition scores from camera inspections</li><li>Internal CO₂ price and relining policy</li></ul></div>
   </div>
+  <p class="src"><a href="../slides/limitations.html" target="_blank" rel="noopener">Limitations in detail →</a></p>
 </section>
 
 <section class="slide" data-title="Demo">
@@ -125,7 +137,7 @@ nav button:disabled { opacity: .4; cursor: default; }
   <div class="grid" style="--n:4">
     <div class="card"><b>Innovation</b><span class="muted">Carbon inside the lifetime decision</span></div>
     <div class="card"><b>Impact</b><span class="muted">One advice per pipe, in a browser</span></div>
-    <div class="card"><b>Technical</b><span class="muted">Real graph, every assumption visible</span></div>
+    <div class="card"><b>Technical</b><span class="muted">SPARQL on the real graph, IFC 4.3 with soil, every assumption sourced</span></div>
     <div class="card"><b>Story</b><span class="muted">Deck, then live demo</span></div>
   </div>
   <a class="cta" href="../">Open the live demo →</a>
