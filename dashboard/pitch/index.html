@@ -85,7 +85,7 @@ nav button:disabled { opacity: .4; cursor: default; }
 
 <main>
 <section class="slide" data-title="Opening">
-  <span class="eyebrow">The story · Opening · 0:20</span>
+  <span class="eyebrow">The story · Opening</span>
   <h1>Under Amsterdam lie roughly 3,900 km of sewer. Whether to defer, reline or replace a pipe is decided in disconnected steps, without taking the climate into account.</h1>
   <p class="src">Hack the Water Graph · Use Case 4 · Integrated intervention decision</p>
 </section>
@@ -97,7 +97,7 @@ nav button:disabled { opacity: .4; cursor: default; }
 </section>
 
 <section class="slide" data-title="Challenge">
-  <span class="eyebrow">The story · The challenge · 0:40</span>
+  <span class="eyebrow">The story · The challenge</span>
   <h2>Waternet decides pipe by pipe, with the facts spread over systems that don’t communicate.</h2>
   <div class="grid">
     <div class="card"><span class="big">3</span><span class="muted">separate systems: cost in Maximo, risk in inspection data, function in GIS and IFC</span></div>
@@ -108,18 +108,18 @@ nav button:disabled { opacity: .4; cursor: default; }
 </section>
 
 <section class="slide" data-title="Idea">
-  <span class="eyebrow">The story · Our idea · 0:20</span>
+  <span class="eyebrow">The story · Our idea</span>
   <div class="answer">We help Waternet decide, for every sewer section, whether to <span class="d">defer</span>, <span class="r">reline</span> or <span class="x">replace</span>, by putting financial, social and environmental factors in one euro value and letting a risk model advise the outcome.</div>
   <div class="grid" style="--n:4">
-    <div class="card"><span class="step">1</span><b>Knowledge Graph</b><span class="muted">One SPARQL query · 1,804 pipes</span></div>
-    <div class="card"><span class="step">2</span><b>Three Values</b><span class="muted">Financial · Social · Environmental, in €</span></div>
-    <div class="card"><span class="step">3</span><b>Risk Over Time</b><span class="muted">Condition 1–6 · Markov model · Soil</span></div>
-    <div class="card"><span class="step">4</span><b>Advice + Why</b><span class="muted">Per pipe, in a browser and in IFC</span></div>
+    <div class="card"><span class="step">1</span><b>Connect the Data</b><span class="muted">Each pipe with its material, depth, soil and street, in one place</span></div>
+    <div class="card"><span class="step">2</span><b>Price Three Costs</b><span class="muted">Money, disruption and climate, all in euros</span></div>
+    <div class="card"><span class="step">3</span><b>Look Ahead</b><span class="muted">How each pipe ages, and what waiting risks</span></div>
+    <div class="card"><span class="step">4</span><b>Advise and Explain</b><span class="muted">Per pipe, on a map and in a 3D model</span></div>
   </div>
 </section>
 
 <section class="slide" data-title="Demo">
-  <span class="eyebrow">The proof · Demo · 1:00</span>
+  <span class="eyebrow">The proof · Demo</span>
   <h2>Our solution: for each pipe, an individual advice.</h2>
   <div class="grid">
     <div class="card"><b>Every Pipe</b><span class="muted">Gets its own advice: <span class="d">defer</span>, <span class="r">reline</span> or <span class="x">replace</span>.</span></div>
@@ -131,29 +131,34 @@ nav button:disabled { opacity: .4; cursor: default; }
 </section>
 
 <section class="slide" data-title="Under the hood">
-  <span class="eyebrow">The proof · Under the hood · 1:00</span>
+  <span class="eyebrow">The proof · Under the hood</span>
   <h2>What’s real, what’s assumed, what’s missing.</h2>
   <div class="grid">
     <div class="card"><b class="d">What’s real</b><ul class="muted"><li><b>Network:</b> W-OTL graph (SPARQL), NMD pipes &amp; liners</li><li><b>Surroundings:</b> GeoTOP soil, BAG addresses, trees</li><li><b>Street works:</b> WIOR, Stadsregie, NDW</li><li><b>Environmental impact:</b> ecoinvent MKI</li></ul></div>
     <div class="card"><b class="r">What’s inferred or synthetic</b><ul class="muted"><li><b>Condition and failure risk:</b> classes 1–6 simulated from age and material; failure rate per class is an assumed table</li><li><b>Unit costs:</b> published Barendrecht 2023 prices</li><li><b>Closure days and peat settlement:</b> estimated</li></ul></div>
     <div class="card"><b class="x">What doesn’t work yet</b><ul class="muted"><li><b>Costs decide how, not whether:</b> switching cost source changes 11% of advice</li><li><b>Needed:</b> Maximo costs, inspection scores, failure history</li></ul></div>
   </div>
-  <p class="src"><a href="../slides/limitations.html" target="_blank" rel="noopener">Limitations in detail →</a> · <a href="../data/sewer.ifc">IFC 4.3 model with soil layers</a></p>
 </section>
 
 <section class="slide" data-title="What it changes">
-  <span class="eyebrow">The proof · What it changes · 0:40</span>
+  <span class="eyebrow">The proof · What it changes</span>
   <h2>Change the data and the advice moves. Environment is now part of the conversation.</h2>
+<<<<<<< Updated upstream
   <div class="grid">
     <div class="card"><b>Carbon costs more</b><span class="muted">Raise the CO₂ price and the advice shifts, pipe by pipe, with the reason shown for each.</span></div>
     <div class="card"><b>The street opens anyway</b><span class="muted">When other works are planned there, digging and closure are shared, so replacing becomes cheaper.</span></div>
     <div class="card"><b>A busy street</b><span class="muted">More homes nearby make each day of closure cost more, which favours the quicker reline.</span></div>
+=======
+  <div class="grid" style="--n:2">
+    <div class="card"><b>The data drives the advice</b><span class="muted">Costs, pipe condition and the carbon price are all inputs that can be changed. Change one and every pipe’s advice is recalculated. With Waternet’s own costs and inspections, the advice follows Waternet’s own data.</span></div>
+    <div class="card"><b>Climate on the same scale</b><span class="muted">Every option gets a CO₂ footprint (ecoinvent), priced in euros next to money and disruption. The climate is weighed in every decision, not added afterwards.</span></div>
+>>>>>>> Stashed changes
   </div>
   <p class="muted">For every pipe: what acting now instead of waiting a year is worth, in money, disruption and carbon.</p>
 </section>
 
 <section class="slide" data-title="Close">
-  <span class="eyebrow">The close · 0:30</span>
+  <span class="eyebrow">The close</span>
   <h1>3,900 km of sewer. One question per pipe. Now answered with the climate in it.</h1>
   <div class="answer">Money, people and climate in one number, with the reason behind every <span class="d">defer</span>, <span class="r">reline</span> and <span class="x">replace</span>. Add Waternet’s own costs and inspections, and it runs on the whole network.</div>
   <a class="cta" href="../?tour=1">Open the live demo →</a>
