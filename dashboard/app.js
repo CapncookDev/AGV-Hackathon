@@ -358,7 +358,7 @@ async function openBim(key = 'station') {
 $('bimClose').onclick = () => { $('bimModal').hidden = true; };
 
 // ---------- map + data ----------
-async function load(name) { const r = await fetch('data/' + name); return r.json(); }
+async function load(name) { const r = await fetch('data/' + name, { cache: 'no-cache' }); return r.json(); }
 
 async function main() {
   buildControls();

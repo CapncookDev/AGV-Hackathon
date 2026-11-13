@@ -13,7 +13,7 @@ let S = null;
 
 export async function initScene(container, { onPick, onStation, diameters }) {
   if (S) { S.resize(); return S; }
-  const data = await (await fetch('data/scene.json')).json();
+  const data = await (await fetch('data/scene.json', { cache: 'no-cache' })).json();
   const [bx0, by0, bx1, by1] = data.bounds;
   const W = bx1 - bx0, D = by1 - by0;
   const bottom = data.min_z * DEPTH_EXAG - 8;

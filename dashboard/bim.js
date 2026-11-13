@@ -91,7 +91,7 @@ export async function showModel(container, info, key = 'station') {
     viewer.loading ??= {};
     viewer.loading[key] ??= (async () => {
       const api = await getIfc();
-      const buf = new Uint8Array(await (await fetch(cfg.url)).arrayBuffer());
+      const buf = new Uint8Array(await (await fetch(cfg.url, { cache: 'no-cache' })).arrayBuffer());
       const modelID = api.OpenModel(buf, { COORDINATE_TO_ORIGIN: true });
       const colourOf = cfg.advice ? adviceColours(api, modelID) : null;
       const { group, count } = buildGroup(api, modelID, colourOf);
