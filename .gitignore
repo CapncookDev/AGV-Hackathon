@@ -31,3 +31,9 @@ venv/
 
 # Logs
 *.log
+
+# Vercel
+.vercel
+
+# Raw hackathon data (internal) — keep out of git
+data/raw/

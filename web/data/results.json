@@ -1,0 +1,822 @@
+{
+  "sample": true,
+  "generated": "mock data for layout only — replace with pipeline output",
+  "assets": [
+    {
+      "id": "SEW-001",
+      "type": "sewer section",
+      "material": "PVC",
+      "diameter_mm": 600,
+      "length_m": 40,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 600,
+          "gwp_kg": 0,
+          "risk": 0.131,
+          "function": 0.75,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 45702,
+          "gwp_kg": 5978,
+          "risk": 0.023,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 64800,
+          "gwp_kg": 15600,
+          "risk": 0.009,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-002",
+      "type": "sewer section",
+      "material": "stoneware",
+      "diameter_mm": 500,
+      "length_m": 127,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1905,
+          "gwp_kg": 0,
+          "risk": 0.409,
+          "function": 0.61,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 101861,
+          "gwp_kg": 15489,
+          "risk": 0.044,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 190500,
+          "gwp_kg": 45085,
+          "risk": 0.017,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-003",
+      "type": "sewer section",
+      "material": "cast iron",
+      "diameter_mm": 400,
+      "length_m": 149,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2235,
+          "gwp_kg": 0,
+          "risk": 0.531,
+          "function": 0.73,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 101369,
+          "gwp_kg": 18036,
+          "risk": 0.044,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 205620,
+          "gwp_kg": 47680,
+          "risk": 0.017,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-004",
+      "type": "sewer section",
+      "material": "PVC",
+      "diameter_mm": 600,
+      "length_m": 132,
+      "condition": 3,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1980,
+          "gwp_kg": 0,
+          "risk": 0.336,
+          "function": 0.66,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 121330,
+          "gwp_kg": 23644,
+          "risk": 0.028,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 213840,
+          "gwp_kg": 51480,
+          "risk": 0.011,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-005",
+      "type": "sewer section",
+      "material": "concrete",
+      "diameter_mm": 400,
+      "length_m": 109,
+      "condition": 3,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1635,
+          "gwp_kg": 0,
+          "risk": 0.428,
+          "function": 0.71,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 106083,
+          "gwp_kg": 16375,
+          "risk": 0.034,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 150420,
+          "gwp_kg": 34880,
+          "risk": 0.014,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-006",
+      "type": "sewer section",
+      "material": "PVC",
+      "diameter_mm": 400,
+      "length_m": 121,
+      "condition": 4,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1815,
+          "gwp_kg": 0,
+          "risk": 0.235,
+          "function": 0.78,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 78348,
+          "gwp_kg": 13218,
+          "risk": 0.047,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 166980,
+          "gwp_kg": 38720,
+          "risk": 0.019,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-007",
+      "type": "sewer section",
+      "material": "PVC",
+      "diameter_mm": 300,
+      "length_m": 122,
+      "condition": 4,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1830,
+          "gwp_kg": 0,
+          "risk": 0.175,
+          "function": 0.72,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 88782,
+          "gwp_kg": 12378,
+          "risk": 0.025,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 153720,
+          "gwp_kg": 34770,
+          "risk": 0.01,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-008",
+      "type": "sewer section",
+      "material": "stoneware",
+      "diameter_mm": 600,
+      "length_m": 77,
+      "condition": 4,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1155,
+          "gwp_kg": 0,
+          "risk": 0.342,
+          "function": 0.74,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 83862,
+          "gwp_kg": 12270,
+          "risk": 0.045,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 124740,
+          "gwp_kg": 30030,
+          "risk": 0.018,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-009",
+      "type": "sewer section",
+      "material": "PVC",
+      "diameter_mm": 400,
+      "length_m": 190,
+      "condition": 4,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2850,
+          "gwp_kg": 0,
+          "risk": 0.24,
+          "function": 0.76,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 171846,
+          "gwp_kg": 20529,
+          "risk": 0.024,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 262200,
+          "gwp_kg": 60800,
+          "risk": 0.01,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-010",
+      "type": "sewer section",
+      "material": "concrete",
+      "diameter_mm": 300,
+      "length_m": 180,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2700,
+          "gwp_kg": 0,
+          "risk": 0.196,
+          "function": 0.64,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 134352,
+          "gwp_kg": 14795,
+          "risk": 0.017,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 226800,
+          "gwp_kg": 51300,
+          "risk": 0.007,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-011",
+      "type": "sewer section",
+      "material": "cast iron",
+      "diameter_mm": 300,
+      "length_m": 141,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2115,
+          "gwp_kg": 0,
+          "risk": 0.274,
+          "function": 0.78,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 88515,
+          "gwp_kg": 19308,
+          "risk": 0.036,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 177660,
+          "gwp_kg": 40185,
+          "risk": 0.014,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-012",
+      "type": "sewer section",
+      "material": "concrete",
+      "diameter_mm": 600,
+      "length_m": 185,
+      "condition": 4,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2775,
+          "gwp_kg": 0,
+          "risk": 0.09,
+          "function": 0.65,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 160910,
+          "gwp_kg": 19409,
+          "risk": 0.015,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 299700,
+          "gwp_kg": 72150,
+          "risk": 0.006,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-013",
+      "type": "sewer section",
+      "material": "PVC",
+      "diameter_mm": 400,
+      "length_m": 159,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2385,
+          "gwp_kg": 0,
+          "risk": 0.23,
+          "function": 0.62,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 166481,
+          "gwp_kg": 15711,
+          "risk": 0.024,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 219420,
+          "gwp_kg": 50880,
+          "risk": 0.009,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-014",
+      "type": "sewer section",
+      "material": "cast iron",
+      "diameter_mm": 300,
+      "length_m": 118,
+      "condition": 3,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1770,
+          "gwp_kg": 0,
+          "risk": 0.458,
+          "function": 0.79,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 114891,
+          "gwp_kg": 8584,
+          "risk": 0.038,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 148680,
+          "gwp_kg": 33630,
+          "risk": 0.015,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-015",
+      "type": "sewer section",
+      "material": "concrete",
+      "diameter_mm": 500,
+      "length_m": 130,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1950,
+          "gwp_kg": 0,
+          "risk": 0.129,
+          "function": 0.74,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 102010,
+          "gwp_kg": 18049,
+          "risk": 0.023,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 195000,
+          "gwp_kg": 46150,
+          "risk": 0.009,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-016",
+      "type": "sewer section",
+      "material": "stoneware",
+      "diameter_mm": 400,
+      "length_m": 154,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2310,
+          "gwp_kg": 0,
+          "risk": 0.065,
+          "function": 0.61,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 163993,
+          "gwp_kg": 13931,
+          "risk": 0.019,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 212520,
+          "gwp_kg": 49280,
+          "risk": 0.008,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-017",
+      "type": "sewer section",
+      "material": "concrete",
+      "diameter_mm": 600,
+      "length_m": 181,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2715,
+          "gwp_kg": 0,
+          "risk": 0.63,
+          "function": 0.78,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 210447,
+          "gwp_kg": 25052,
+          "risk": 0.049,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 293220,
+          "gwp_kg": 70590,
+          "risk": 0.019,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-018",
+      "type": "sewer section",
+      "material": "stoneware",
+      "diameter_mm": 300,
+      "length_m": 104,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1560,
+          "gwp_kg": 0,
+          "risk": 0.322,
+          "function": 0.67,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 84596,
+          "gwp_kg": 10014,
+          "risk": 0.046,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 131040,
+          "gwp_kg": 29640,
+          "risk": 0.018,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-019",
+      "type": "sewer section",
+      "material": "stoneware",
+      "diameter_mm": 400,
+      "length_m": 156,
+      "condition": 5,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2340,
+          "gwp_kg": 0,
+          "risk": 0.13,
+          "function": 0.78,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 171130,
+          "gwp_kg": 24887,
+          "risk": 0.026,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 215280,
+          "gwp_kg": 49920,
+          "risk": 0.01,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-020",
+      "type": "sewer section",
+      "material": "cast iron",
+      "diameter_mm": 500,
+      "length_m": 72,
+      "condition": 4,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1080,
+          "gwp_kg": 0,
+          "risk": 0.143,
+          "function": 0.64,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 69669,
+          "gwp_kg": 11319,
+          "risk": 0.033,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 108000,
+          "gwp_kg": 25560,
+          "risk": 0.013,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-021",
+      "type": "sewer section",
+      "material": "cast iron",
+      "diameter_mm": 300,
+      "length_m": 111,
+      "condition": 4,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 1665,
+          "gwp_kg": 0,
+          "risk": 0.322,
+          "function": 0.75,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 90424,
+          "gwp_kg": 11916,
+          "risk": 0.034,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 139860,
+          "gwp_kg": 31635,
+          "risk": 0.013,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-022",
+      "type": "sewer section",
+      "material": "concrete",
+      "diameter_mm": 400,
+      "length_m": 44,
+      "condition": 4,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 660,
+          "gwp_kg": 0,
+          "risk": 0.185,
+          "function": 0.69,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 42688,
+          "gwp_kg": 4544,
+          "risk": 0.022,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 60720,
+          "gwp_kg": 14080,
+          "risk": 0.009,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-023",
+      "type": "sewer section",
+      "material": "cast iron",
+      "diameter_mm": 600,
+      "length_m": 52,
+      "condition": 3,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 780,
+          "gwp_kg": 0,
+          "risk": 0.526,
+          "function": 0.75,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 64739,
+          "gwp_kg": 8522,
+          "risk": 0.047,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 84240,
+          "gwp_kg": 20280,
+          "risk": 0.019,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    },
+    {
+      "id": "SEW-024",
+      "type": "sewer section",
+      "material": "concrete",
+      "diameter_mm": 500,
+      "length_m": 136,
+      "condition": 3,
+      "options": [
+        {
+          "option": "defer",
+          "cost_eur": 2040,
+          "gwp_kg": 0,
+          "risk": 0.198,
+          "function": 0.6,
+          "life_years": 5
+        },
+        {
+          "option": "reline",
+          "cost_eur": 101508,
+          "gwp_kg": 13039,
+          "risk": 0.017,
+          "function": 0.9,
+          "life_years": 50
+        },
+        {
+          "option": "replace",
+          "cost_eur": 204000,
+          "gwp_kg": 48280,
+          "risk": 0.007,
+          "function": 1,
+          "life_years": 80
+        }
+      ]
+    }
+  ]
+}
