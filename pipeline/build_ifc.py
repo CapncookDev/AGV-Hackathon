@@ -33,6 +33,57 @@ def api(fn_path, model, **kw):
     return getattr(importlib.import_module(f"ifcopenshell.api.{mod}"), fn)(model, **kw)
 
 
+def clean_inverts(pipes, nodes):
+    """Invert levels (m NAP) per pipe end: {id: (start, end, source)}.
+
+    GIS values are used as they are, except one above ground level, which is a data error.
+    A missing or invalid end takes the lowest known invert of the other pipes at the same node,
+    else the pipe's other end, else 1.5 m below ground. The source records which rule applied."""
+    grounds = sorted(n["ground"] for n in nodes.values() if n.get("ground") is not None)
+    g_med = grounds[len(grounds) // 2] if grounds else 0.0
+
+    def ground_at(p, node):
+        g = (nodes.get(node) or {}).get("ground")
+        return g if g is not None else p["ground"]
+
+    ends, notes = {}, {}
+    for p in pipes:
+        for side, node in (("bob_b", p["b"]), ("bob_e", p["e"])):
+            z, g = p[side], ground_at(p, node)
+            if z is not None and g is not None and z > g:
+                notes.setdefault(p["id"], []).append(f"{side} {z:.2f} above ground {g:.2f} ignored")
+                z = None
+            ends[(p["id"], side)] = z
+
+    known = {}
+    for p in pipes:
+        for side, node in (("bob_b", p["b"]), ("bob_e", p["e"])):
+            if node and ends[(p["id"], side)] is not None:
+                known.setdefault(node, []).append((p["id"], ends[(p["id"], side)]))
+
+    out = {}
+    for p in pipes:
+        vals, how = {}, []
+        for side, node, other in (("bob_b", p["b"], "bob_e"), ("bob_e", p["e"], "bob_b")):
+            z = ends[(p["id"], side)]
+            if z is None:
+                at_node = [v for pid, v in known.get(node, []) if pid != p["id"]]
+                if at_node:
+                    z, rule = min(at_node), "lowest invert of connected pipes"
+                elif ends[(p["id"], other)] is not None:
+                    z, rule = ends[(p["id"], other)], "other end of this pipe"
+                else:
+                    g = ground_at(p, node)
+                    z, rule = (g if g is not None else g_med) - 1.5, "1.5 m below ground"
+                how.append(f"{side} estimated: {rule}")
+            vals[side] = z
+        src = "; ".join(notes.get(p["id"], []) + how) or "GIS"
+        out[p["id"]] = (vals["bob_b"], vals["bob_e"], src)
+    fixed = sum(1 for v in out.values() if v[2] != "GIS")
+    print(f"inverts: {fixed} pipes with an estimated or corrected invert")
+    return out
+
+
 def main(scale=1.0, out=OUT):
     """scale > 1 thickens pipes and manholes for a readable overview; geometry positions stay true."""
     src = json.loads((WORK / "pipes_rd.json").read_text())
@@ -92,15 +143,14 @@ def main(scale=1.0, out=OUT):
     def placement():
         return m.createIfcLocalPlacement(site.ObjectPlacement, m.createIfcAxis2Placement3D(m.createIfcCartesianPoint((0.0, 0.0, 0.0))))
 
-    products, node_bottom = [], {}
+    inverts = clean_inverts(pipes, nodes)
+    products, node_info = [], {}
     for p in pipes:
         d = dec.get(p["id"], {"action": "defer"})
         D = p["diameter_mm"] / 1000
         r_in = D / 2
         wall = WALL.get(p["material"], 0.06) * D + 0.01
-        ground = p["ground"] if p["ground"] is not None else 0.0
-        bb = p["bob_b"] if p["bob_b"] is not None else ground - 1.5
-        be = p["bob_e"] if p["bob_e"] is not None else bb
+        bb, be, inv_src = inverts[p["id"]]
         pts = p["pts"]
         cum = [0.0]
         for i in range(1, len(pts)):
@@ -110,8 +160,16 @@ def main(scale=1.0, out=OUT):
         items = [s for s in (cylinder(pts3[i], pts3[i + 1], (r_in + wall) * scale, wall * scale, styles[d["action"]]) for i in range(len(pts3) - 1)) if s]
         if not items:
             continue
-        for node, z in ((p["b"], bb), (p["e"], be)):
-            node_bottom[node] = min(node_bottom.get(node, 99), z)
+        # each pipe end registers at its node, so the chamber can enclose every connected pipe
+        r_draw = (r_in + wall) * scale
+        for node, xy, c in ((p["b"], pts[0], pts3[0][2]), (p["e"], pts[-1], pts3[-1][2])):
+            key = node or f"end:{xy[0]:.2f},{xy[1]:.2f}"
+            n = node_info.setdefault(key, {"xy": xy, "bottom": 99.0, "top": -99.0, "r": 0.0, "grounds": []})
+            n["bottom"] = min(n["bottom"], c - r_draw)
+            n["top"] = max(n["top"], c + r_draw)
+            n["r"] = max(n["r"], r_draw)
+            if p["ground"] is not None:
+                n["grounds"].append(p["ground"])
         el = m.create_entity("IfcPipeSegment", GlobalId=ifcopenshell.guid.new(), Name=f"Pipe {p['id']}",
                              Description=f"{p['kind']} · {p['material']} Ø{p['diameter_mm']} · advice: {d['action']}",
                              ObjectType=p["kind"], PredefinedType="RIGIDSEGMENT")
@@ -123,7 +181,7 @@ def main(scale=1.0, out=OUT):
             "WOTL_GUID": p["guid"], "GIS_URI": f"https://wkg.waternet.nl/id/{p['guid']}",
             "MaterialCode": p["material_raw"] or "unknown", "Material": p["material"],
             "NominalDiameter_mm": p["diameter_mm"], "YearBuilt": p["year"],
-            "InvertLevelStart_mNAP": round(bb, 3), "InvertLevelEnd_mNAP": round(be, 3)})
+            "InvertLevelStart_mNAP": round(bb, 3), "InvertLevelEnd_mNAP": round(be, 3), "InvertLevelSource": inv_src})
         ps = api("pset.add_pset", m, product=el, name="AGV_Condition")
         api("pset.edit_pset", m, pset=ps, properties={
             "ConditionClass": p["cond"], "ConditionSource": "synthetic – Markov ageing from build year",
@@ -136,14 +194,19 @@ def main(scale=1.0, out=OUT):
             "AdvicePerClass_1to6": d.get("policy", ""),
             "ModelSettings": settings})
 
-    for node_id, bottom in node_bottom.items():
-        n = nodes.get(node_id)
-        if not n or n["ground"] is None:
-            continue
-        x, y = n["xy"]
-        top = n["ground"]
+    for node_id, info in node_info.items():
+        n = nodes.get(node_id) or {}
+        x, y = n.get("xy") or info["xy"]
+        # ground level: the node's own, else the mean of its pipes' ground; the chamber always reaches above every pipe
+        ground = n.get("ground")
+        if ground is None and info["grounds"]:
+            ground = sum(info["grounds"]) / len(info["grounds"])
+        top = max(ground if ground is not None else info["top"], info["top"] + 0.05)
+        bottom = info["bottom"] - 0.15
         is_station = node_id == src["station"]
-        solid = cylinder((x - x0, y - y0, bottom - 0.15), (x - x0, y - y0, top), 2.5 if is_station else 0.5 * min(scale, 2), None, manhole_style)
+        # wide enough to hold the thickest connected pipe, so pipes meeting at different levels join inside it
+        radius = max(2.5 if is_station else 0.5 * min(scale, 2), info["r"] * 1.15)
+        solid = cylinder((x - x0, y - y0, bottom), (x - x0, y - y0, top), radius, None, manhole_style)
         if not solid:
             continue
         el = m.create_entity("IfcDistributionChamberElement", GlobalId=ifcopenshell.guid.new(),
@@ -154,7 +217,9 @@ def main(scale=1.0, out=OUT):
         el.Representation = shape([solid])
         products.append(el)
         ps = api("pset.add_pset", m, product=el, name="AGV_Source")
-        api("pset.edit_pset", m, pset=ps, properties={"GIS_URI": node_id, "GroundLevel_mNAP": round(top, 3), "BottomLevel_mNAP": round(bottom, 3)})
+        api("pset.edit_pset", m, pset=ps, properties={
+            "GIS_URI": node_id if not node_id.startswith("end:") else "none (pipe end without node in GIS)",
+            "GroundLevel_mNAP": round(ground, 3) if ground is not None else "unknown", "BottomLevel_mNAP": round(bottom, 3)})
 
     api("spatial.assign_container", m, relating_structure=site, products=products)
     m.write(str(out))

@@ -86,13 +86,21 @@ export async function showModel(container, info, key = 'station') {
   viewer.current = key;
   if (!viewer.groups[key]) {
     info.textContent = `Loading ${cfg.title} (${cfg.size})…`;
-    const api = await getIfc();
-    const buf = new Uint8Array(await (await fetch(cfg.url)).arrayBuffer());
-    const modelID = api.OpenModel(buf, { COORDINATE_TO_ORIGIN: true });
-    const colourOf = cfg.advice ? adviceColours(api, modelID) : null;
-    const { group, count } = buildGroup(api, modelID, colourOf);
-    viewer.scene.add(group);
-    viewer.groups[key] = { group, modelID, intro: cfg.intro(count.toLocaleString('en-US')), box: new THREE.Box3().setFromObject(group) };
+    // one load per model, even when the user switches back and forth while it is still loading
+    viewer.loading ??= {};
+    viewer.loading[key] ??= (async () => {
+      const api = await getIfc();
+      const buf = new Uint8Array(await (await fetch(cfg.url)).arrayBuffer());
+      const modelID = api.OpenModel(buf, { COORDINATE_TO_ORIGIN: true });
+      const colourOf = cfg.advice ? adviceColours(api, modelID) : null;
+      const { group, count } = buildGroup(api, modelID, colourOf);
+      viewer.scene.add(group);
+      viewer.groups[key] = { group, modelID, intro: cfg.intro(count.toLocaleString('en-US')), box: new THREE.Box3().setFromObject(group) };
+    })();
+    await viewer.loading[key];
+    // a model that finishes loading after the user switched away stays hidden
+    viewer.groups[key].group.visible = viewer.current === key;
+    if (viewer.current !== key) return;
   }
   const g = viewer.groups[key];
   frame(g.box, cfg.view);
