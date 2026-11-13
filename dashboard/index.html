@@ -66,14 +66,15 @@
       <h3>Fixed model assumptions</h3>
       <table class="assume">
         <tbody>
-          <tr><td>Scope</td><td>Gravity sewers only. The 82 pressure mains (cast iron) are left out: relining them needs pressure-rated liners, too specific for this model.</td><td><span class="st assumption">scope</span></td></tr>
+          <tr><td>Scope</td><td>Gravity sewers: rainwater sewer (hemelwaterriool), foul sewer (vuilwaterriool) and transport sewer (transportriool), names from the Waternet OTL. Pressure lines (persleiding, hoofdpersleiding) are left out: relining them needs pressure-rated liners.</td><td><span class="st assumption">scope</span></td></tr>
           <tr><td>Condition class</td><td>Synthetic: Markov ageing from build year, one class worse with p = 4 / expected life per year (seeded per pipe)</td><td><span class="st assumption">assumption</span></td></tr>
           <tr><td>Expected life</td><td>concrete 80 · PVC 70 · PE 70 · stoneware 100 · asbestos cement 60 · cast iron 80 yr</td><td><span class="st assumption">assumption</span></td></tr>
           <tr><td>Failure chance /yr</td><td>class 1–6: 0.1 · 0.3 · 1 · 3 · 8 · 20 %</td><td><span class="st assumption">assumption</span></td></tr>
-          <tr><td>Life gained</td><td>reline → class 2 (class 3 if relined at 5–6), liner lasts ~25 yr · replace → class 1</td><td><span class="st partly">partly sourced</span></td></tr>
+          <tr><td>Life gained</td><td>reline → class 2 (class 3 if relined at 5–6); liner lasts 25 yr (relined at class 1–4) or 15 yr (class 5–6) · replace → class 1</td><td><span class="st partly">partly sourced</span></td></tr>
           <tr><td>Failure cost</td><td>1.5 × planned replacement + damage (× Ø/300) + 2 × closure days + MKI</td><td><span class="st assumption">assumption</span></td></tr>
           <tr><td>Closure days</td><td>replace 3 + length / 8 m per day · reline 1 + length / 80 (WIOR sewer works: median 14 days)</td><td><span class="st partly">partly sourced</span></td></tr>
-          <tr><td>MKI per option</td><td>pipe / liner mass, trench soil, sand, asphalt, diesel, demolition × Ecoinvent factors in the data set</td><td><span class="st sourced">sourced</span></td></tr>
+          <tr><td>MKI &amp; CO₂ per option</td><td>New pipe and liner: NMD generic products via the Madaster API (Rioolbuis beton 300/500/800, PVC groot, gres; SAERTEX GVK kousliner), ECI and GWP per metre (A1–A5, C1–C4). Trench works (soil, sand, asphalt, diesel, demolition): Ecoinvent factors in the data set.</td><td><span class="st sourced">sourced</span></td></tr>
+          <tr><td>Cost per metre</td><td>Base: unit prices by diameter from Barendrecht (2023), replace €636–1,386/m, reline €248–563/m, plus road restoration €80/m² (assumption). Default calibrated to VMM 2018 dense-urban costs, indexed to 2025 (replace ×3.8, reline ×1.48); Barendrecht selectable in the dropdown.</td><td><span class="st partly">partly sourced</span></td></tr>
           <tr><td>Tree proximity</td><td>Horizontal distance on the map from the trunk (tree register point) to the pipe centre line: ≤ 4 m counts as affected by digging, ≤ 10 m for protected trees. Depth, crown and root spread are not modelled.</td><td><span class="st assumption">assumption</span></td></tr>
           <tr><td>Addresses</td><td>BAG address points within 30 m horizontal distance of the pipe centre line</td><td><span class="st partly">partly sourced</span></td></tr>
           <tr><td>Combining works</td><td>planned street works within the horizon: replace −30 % FV, −80 % closure SV</td><td><span class="st assumption">assumption</span></td></tr>

@@ -1,0 +1,37 @@
+# Decision inputs per sewer section, straight from the Waternet knowledge graph (GIS export, W-OTL / NEN 2660).
+# One row per pipe: type, material (via the W-OTL → NL-SfB "naakt" mapping), build year, diameter,
+# invert levels (bob), start/end node with ground level, system type and geometry.
+# Labels in comments come from the Waternet OTL viewer (otl.waternet.nl).
+
+PREFIX otl:  <https://otl.waternet.nl/def/>
+PREFIX nen:  <https://w3id.org/nen2660/def#>
+PREFIX geo:  <http://www.opengis.net/ont/geosparql#>
+PREFIX gis:  <https://wkg.waternet.nl/def/gis#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?pipe ?typeCode ?kind
+       (SAMPLE(?yr) AS ?year) (SAMPLE(?d) AS ?diameter) (SAMPLE(?bb) AS ?bobStart) (SAMPLE(?be) AS ?bobEnd)
+       (SAMPLE(?mat) AS ?material) (SAMPLE(?sys) AS ?system) (SAMPLE(?w) AS ?wkt)
+       (SAMPLE(?from) AS ?startNode) (SAMPLE(?to) AS ?endNode)
+       (SAMPLE(?gf) AS ?groundStart) (SAMPLE(?gt) AS ?groundEnd)
+WHERE {
+  VALUES (?typeClass ?typeCode ?kind) {
+    (otl:934f048a-fae1-3715-8eb8-16a89e4cbeda "934f048a" "rainwater sewer")   # hemelwaterriool
+    (otl:80b1ae03-7d7d-3093-95e9-657502e456c0 "80b1ae03" "foul sewer")        # vuilwaterriool
+    (otl:9f7a4396-88a9-4a44-a5f4-ea970ffe0494 "9f7a4396" "transport sewer")   # transportriool
+  }
+  ?pipe a ?typeClass ;
+        geo:hasGeometry/geo:asWKT ?w .
+  OPTIONAL { ?pipe otl:de592649-bb0a-3f79-9887-1d5bd9179a5b ?yr }                       # bouwjaar
+  OPTIONAL { ?pipe otl:ab2db5d0-b509-3da9-83e9-d0ad5c5fd272/rdf:value ?d }              # diameter (mm)
+  OPTIONAL { ?pipe otl:c1c02c24-9b73-3b54-9787-82a78c77b92a/rdf:value ?bb }             # bob begin (m NAP)
+  OPTIONAL { ?pipe otl:f8a8dd2a-a7e0-358f-9765-ee0c96580184/rdf:value ?be }             # bob eind (m NAP)
+  OPTIONAL { ?pipe nen:consistsOf/owl:equivalentClass ?mat }                            # material (naakt)
+  OPTIONAL { ?pipe otl:2c42b551-9f31-4950-a663-08fbf0f2cfa5 ?sys }                      # type stedelijk waterstelsel
+  OPTIONAL { ?pipe gis:sd_beginknoop ?from .
+             OPTIONAL { ?from otl:31d07784-08d1-4227-b397-bab2d0b55a5f/rdf:value ?gf } } # maaiveldhoogte
+  OPTIONAL { ?pipe gis:sd_eindknoop ?to .
+             OPTIONAL { ?to otl:31d07784-08d1-4227-b397-bab2d0b55a5f/rdf:value ?gt } }
+}
+GROUP BY ?pipe ?typeCode ?kind

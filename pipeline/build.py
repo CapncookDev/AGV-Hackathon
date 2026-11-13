@@ -40,8 +40,9 @@ P_YEAR = URIRef(OTL + "de592649-bb0a-3f79-9887-1d5bd9179a5b")
 P_NAME = URIRef(OTL + "e8f4ef80-fffc-3f92-91d9-ae33f0c605d7")
 
 # W-OTL class codes (first 8 chars). Labels are not in the export; names are our reading of the data.
-GRAVITY_PIPES = {"934f048a": "main sewer", "80b1ae03": "sewer (PVC network)"}
-# Pressure mains (W-OTL 9f7a4396, cast iron) are out of scope: relining them needs pressure-rated liners.
+# Names from the Waternet OTL viewer (otl.waternet.nl). Pressure lines (persleiding e46f4e14,
+# hoofdpersleiding ee51abb1) are out of scope: relining them needs pressure-rated liners.
+GRAVITY_PIPES = {"934f048a": "rainwater sewer", "80b1ae03": "foul sewer", "9f7a4396": "transport sewer"}
 PUMPING_STATION_URI = "https://wkg.waternet.nl/id/0cdd73d6-a8bc-4afd-a610-3c0d8a61c8f2"
 
 # Material class (from the naakt mapping) -> model material. Expected life in years is an ASSUMPTION.
@@ -132,39 +133,57 @@ def synthetic_condition(pipe_id, age, life):
     return s
 
 
+# Unit prices per metre, Barendrecht Programma Stedelijk Water 2024-2028 (prices 2023, excl. road surface):
+# replace single system / reline incl. one house connection. https://lokaleregelgeving.overheid.nl/CVDR718027
+UNIT_PRICES = [(300, 636, 248), (400, 717, 302), (500, 848, 398), (600, 978, 481), (700, 1386, 563)]
+ROAD_PER_M2 = 80.0  # € per m² to restore paving over the trench (ASSUMPTION)
+
+# NMD (via Madaster API) generic sewer pipes: ECI (€ MKI set 1) and GWP kg CO2e per metre, phases A1-A5 + C1-C4
+NMD_PIPES = {
+    "concrete": [(300, 3.99, 30.25), (500, 7.23, 54.78), (800, 15.62, 118.81)],   # Rioolbuis beton 300/500/800mm
+    "PVC": [(315, 2.76, 22.78)],                                                 # Rioolbuis, PVC groot (131-315mm)
+    "stoneware": [(400, 5.66, 35.24)],                                           # Rioolbuis, gres (125-600mm)
+}
+NMD_LINER = (600, 22.91)   # SAERTEX-LINER MULTI 600/5 GVK kousliner: ECI € per metre (NMD cat. 1)
+GRP_CLIMATE_SHARE = 213.7 / 676.4  # climate part of GVK MKI (Ecoinvent sheet) -> GWP of the liner
+
+
+def interp(table, x):
+    """Linear interpolation on (x, *values) rows; scales proportionally outside the table range."""
+    xs = [r[0] for r in table]
+    if x <= xs[0]:
+        return [v * x / xs[0] for v in table[0][1:]]
+    if x >= xs[-1]:
+        return [v * x / xs[-1] for v in table[-1][1:]]
+    for lo, hi in zip(table, table[1:]):
+        if lo[0] <= x <= hi[0]:
+            f = (x - lo[0]) / (hi[0] - lo[0])
+            return [a + (b - a) * f for a, b in zip(lo[1:], hi[1:])]
+
+
 def pipe_quantities(d, depth, length, mat):
-    """Per-pipe material quantities and MKI (base, climate part) for replace and reline."""
-    r = d / 2
-    if mat == "concrete":
-        t = max(0.04, 0.12 * d + 0.02)
-        new_vol = math.pi * ((r + t) ** 2 - r ** 2)
-        new_mki, new_clim = new_vol * ECO["concrete_m3"][0], new_vol * ECO["concrete_m3"][1]
-        new_mass_t = new_vol * 2.4
-    else:  # replaced by PVC
-        t = d / 30
-        new_mass_t = math.pi * ((r + t) ** 2 - r ** 2) * 1.4
-        new_mki, new_clim = new_mass_t * ECO["pvc_t"][0], new_mass_t * ECO["pvc_t"][1]
+    """Cost (FV), MKI (EV, € set 1) and GWP (kg CO2e) per option for one pipe."""
+    dmm = d * 1000
+    new_mat = mat if mat in NMD_PIPES else "PVC"
+    eci_m, gwp_m = interp(NMD_PIPES[new_mat], dmm)
     width = d + 0.8
     trench = width * depth
     soil_t, sand_t, asphalt_t = trench * 1.8, trench * 1.6, width * 0.1 * 2.4
     diesel_l = 2 + 2 * depth
-    old_t = new_mass_t if mat == "concrete" else new_mass_t * 0.5
-    parts = [
-        (new_mki, new_clim),
-        (soil_t * ECO["soil_t"][0], soil_t * ECO["soil_t"][1]),
-        (sand_t * ECO["sand_t"][0], sand_t * ECO["sand_t"][1]),
-        (asphalt_t * ECO["asphalt_t"][0], asphalt_t * ECO["asphalt_t"][1]),
-        (diesel_l * ECO["diesel_l"][0], diesel_l * ECO["diesel_l"][1]),
-        (old_t * ECO["demolition_t"][0], old_t * ECO["demolition_t"][1]),
-    ]
-    rep_mki = sum(p[0] for p in parts) * length
-    rep_clim = sum(p[1] for p in parts) * length
-    liner_t = math.pi * d * max(0.004, d / 50) * 1.8
-    rel_mki = (liner_t * ECO["grp_t"][0] + 1 * ECO["diesel_l"][0]) * length
-    rel_clim = (liner_t * ECO["grp_t"][1] + 1 * ECO["diesel_l"][1]) * length
+    old_t = math.pi * ((d / 2 + 0.05) ** 2 - (d / 2) ** 2) * 2.4
+    works = [(soil_t, "soil_t"), (sand_t, "sand_t"), (asphalt_t, "asphalt_t"), (diesel_l, "diesel_l"), (old_t, "demolition_t")]
+    works_mki = sum(q * ECO[k][0] for q, k in works)
+    works_gwp = sum(q * ECO[k][1] for q, k in works) / 0.05          # climate € at €0.05/kg -> kg CO2e
+    rep_mki, rep_gwp = (eci_m + works_mki) * length, (gwp_m + works_gwp) * length
+    liner_eci = NMD_LINER[1] * dmm / NMD_LINER[0]
+    rel_mki = (liner_eci + ECO["diesel_l"][0]) * length
+    rel_gwp = (liner_eci * GRP_CLIMATE_SHARE / 0.05 + ECO["diesel_l"][1] / 0.05) * length
+    cost_rep_m, cost_rel_m = interp([(r[0], r[1]) for r in UNIT_PRICES], dmm)[0], interp([(r[0], r[2]) for r in UNIT_PRICES], dmm)[0]
+    cost_rep_m += width * ROAD_PER_M2
     return {
-        "ev_rep": round(rep_mki, 2), "ev_rep_clim": round(rep_clim, 2),
-        "ev_rel": round(rel_mki, 2), "ev_rel_clim": round(rel_clim, 2),
+        "ev_rep": round(rep_mki, 2), "ev_rep_clim": round(rep_gwp * 0.05, 2), "gwp_rep_kg": round(rep_gwp, 1),
+        "ev_rel": round(rel_mki, 2), "ev_rel_clim": round(rel_gwp * 0.05, 2), "gwp_rel_kg": round(rel_gwp, 1),
+        "cost_rep_m": round(cost_rep_m, 1), "cost_rel_m": round(cost_rel_m, 1),
     }
 
 
@@ -175,6 +194,33 @@ def load_graph():
     m.parse(DATA / "naakt_wotl_material_mapping.ttl")
     material = {str(s): str(o).split("/")[-1] for s, o in m.subject_objects(OWL.equivalentClass) if str(s).startswith(OTL)}
     return g, material
+
+
+QUERY = ROOT / "pipeline/queries/decision_inputs.rq"
+
+
+def query_pipes(g):
+    """Run pipeline/queries/decision_inputs.rq on the GIS graph + material mapping."""
+    gq = rdflib.Graph()
+    gq += g
+    gq.parse(DATA / "naakt_wotl_material_mapping.ttl")
+    num = lambda v: float(v) if v is not None else None
+    rows = []
+    for r in gq.query(QUERY.read_text()):
+        kind_, pts = parse_wkt(r.wkt)
+        if kind_ != "LINESTRING":
+            continue
+        y = str(r.year) if r.year is not None else "0"
+        rows.append({
+            "uri": str(r.pipe), "tcode": str(r.typeCode), "kind": str(r.kind), "pts": pts,
+            "mat_raw": str(r.material).split("/")[-1] if r.material is not None else "",
+            "year": int(y) if y.isdigit() else 0,
+            "diam": num(r.diameter), "bob_b": num(r.bobStart), "bob_e": num(r.bobEnd),
+            "b": str(r.startNode or ""), "e": str(r.endNode or ""),
+            "system": str(r.system).split("/")[-1][:8] if r.system is not None else None,
+        })
+    print(f"SPARQL decision_inputs.rq: {len(rows)} sewer sections")
+    return rows
 
 
 def value_node(g, s, name):
@@ -211,16 +257,9 @@ def main():
                 node_feats.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": wgs(*pts[0])},
                                    "properties": {"name": str(next(g.objects(s, P_NAME), "")),
                                                   "year": str(next(g.objects(s, P_YEAR), ""))}})
-        elif kind == "LINESTRING" and tcode in GRAVITY_PIPES:
-            mat_raw = next((material.get(str(o), "") for o in g.objects(s, URIRef(NEN + "consistsOf"))), "")
-            pipes_raw.append({
-                "uri": str(s), "tcode": tcode, "pts": pts, "mat_raw": mat_raw,
-                "year": int(str(next(g.objects(s, P_YEAR), "0")) or 0),
-                "diam": value_node(g, s, "diameter"),
-                "bob_b": value_node(g, s, "bob_b"), "bob_e": value_node(g, s, "bob_e"),
-                "b": str(next(g.objects(s, URIRef(GISNS + "sd_beginknoop")), "")),
-                "e": str(next(g.objects(s, URIRef(GISNS + "sd_eindknoop")), "")),
-            })
+
+    # sewer sections: one SPARQL query over the knowledge graph returns every decision input per pipe
+    pipes_raw = query_pipes(g)
 
     # context layers (RD for analysis, WGS84 for display)
     trees = json.loads((RAW / "trees.geojson").read_text())["features"]
@@ -334,7 +373,7 @@ def main():
         works.sort(key=lambda w: str(w.get("start")))
         props = {
             "id": p["uri"].split("/")[-1][:8], "uri": p["uri"],
-            "kind": GRAVITY_PIPES[p["tcode"]],
+            "kind": p["kind"], "system": p.get("system"),
             "material": mat, "material_raw": p["mat_raw"], "life": life,
             "diameter_mm": round(d * 1000), "length_m": round(length, 1), "depth_m": round(depth, 2),
             "year": p["year"], "age": age, "year_flag": year_flag,

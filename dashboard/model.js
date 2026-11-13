@@ -12,8 +12,8 @@ export const DEFAULTS = {
   dayPerAddr: 10,      // € per day per address within 30 m
   treeCost: 3500,      // € per tree within 4 m of a dig (replanting value, NVTB-based; Haarlem 2019 example)
   protTreeCost: 15000, // € per protected tree within 10 m (monumental / special)
-  repMul: 2.12,        // calibrated: VMM 2018 dense-urban re-laying €1,619/m (2016) × CBS GWW +44% ≈ €2,330/m at Ø250
-  relMul: 0.66,        // calibrated: VMM 2018 relining quote €350/m at Ø600 (2016) × CBS GWW +44% ≈ €500/m
+  repMul: 3.8,         // × Barendrecht 2023 unit price + road (≈ €614/m at Ø250) → VMM 2018 dense-urban, indexed ≈ €2,330/m at Ø250
+  relMul: 1.48,        // × Barendrecht 2023 reline price (≈ €207/m at Ø250) → VMM 2018 relining, indexed ≈ €305/m at Ø250
   damage: 20000,       // € damage per failure for a Ø300 pipe (scales with diameter)
   linerLife: 25,       // years until class 6 after relining at class 1–4 (organisers' slide: +20–30 yr at class 3–4)
   linerLifeLate: 15,   // years until class 6 after relining at class 5–6 (organisers' slide: +10–20 yr)
@@ -27,8 +27,9 @@ const THIS_YEAR = 2026;
 
 export function optionCosts(p, P) {
   const D = p.diameter_mm, L = p.length_m;
-  const fvRepBase = (600 + 2.0 * D + 150 * Math.max(0, p.depth_m - 2)) * L * P.repMul;
-  const fvRel = (250 + 0.85 * D) * L * P.relMul;
+  // unit prices per metre (Barendrecht 2023, by diameter) + road restoration, from the pipeline
+  const fvRepBase = p.cost_rep_m * L * P.repMul;
+  const fvRel = p.cost_rel_m * L * P.relMul;
   const daysRep = 3 + L / 8, daysRel = 1 + L / 80;
   const dayPrice = P.dayBase + P.dayPerAddr * p.addresses_30m;
   const treeSV = p.trees_4m * P.treeCost + p.protected_trees_10m * P.protTreeCost;
