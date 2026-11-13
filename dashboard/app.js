@@ -46,8 +46,10 @@ const PARAMS = [
 const STATUS_TXT = { sourced: 'sourced', partly: 'partly sourced', assumption: 'assumption' };
 
 let pipes = [], pipeLayer, selected = null, solveToken = 0;
-const map = L.map('map', { preferCanvas: true, zoomControl: true });
+// one canvas for every vector layer: a second canvas (e.g. for the planned-works polygons) would
+// sit on top of the pipes and swallow their clicks
 const renderer = L.canvas({ tolerance: 6 });
+const map = L.map('map', { preferCanvas: true, renderer, zoomControl: true });
 
 // ---------- controls: sourced values, choices only where a source gives alternatives ----------
 function buildControls() {
@@ -427,6 +429,11 @@ async function main() {
   $('soilOn').onchange = async e => { (await import('./bim.js?v=__BUILD__')).setSoil(e.target.checked); };
 
   pipeLayer.addTo(map); stationLayer.addTo(map); stadLayer.addTo(map); ndwLayer.addTo(map);
+  // on the shared canvas the last-drawn shape wins a click, so keep the pipes drawn last,
+  // also after the user switches another overlay on
+  const pipesOnTop = () => { if (map.hasLayer(pipeLayer)) pipeLayer.eachLayer(l => l.bringToFront()); };
+  pipesOnTop();
+  map.on('overlayadd', pipesOnTop);
   L.control.layers({ 'Map (PDOK)': base, 'Aerial (PDOK)': aerial }, {
     'Sewer pipes (advice)': pipeLayer,
     'Pumping station (BIM)': stationLayer,
