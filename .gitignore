@@ -40,3 +40,6 @@ data/raw/
 
 # Local Claude config
 .claude/
+
+# Generated outputs from internal data
+data/out/
