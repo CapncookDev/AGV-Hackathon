@@ -115,11 +115,11 @@ nav button:disabled { opacity: .4; cursor: default; }
 
 <section class="slide" data-title="Under the hood">
   <span class="eyebrow">The proof · Under the hood · 1:00</span>
-  <h2>What is real, what is inferred, what is synthetic.</h2>
+  <h2>What’s real, what’s assumed, what’s missing.</h2>
   <div class="grid">
-    <div class="card"><b class="d">Real</b><ul class="muted"><li>W-OTL graph via SPARQL</li><li>NMD pipes &amp; liners (Madaster API)</li><li>ecoinvent MKI</li><li>TNO GeoTOP soil</li><li>BAG addresses, trees</li><li>Street works: WIOR, Stadsregie, NDW</li></ul></div>
-    <div class="card"><b class="r">Inferred</b><ul class="muted"><li>Unit costs from Barendrecht 2023, as Maximo costs were not available (the cost source changes 11% of advice)</li><li>Closure days from WIOR</li><li>Settlement effect of peat</li><li>Failure cost</li></ul></div>
-    <div class="card"><b class="x">Synthetic</b><ul class="muted"><li>Condition class 1–6 from age and material</li><li>Failure rates per class, as there is no failure history</li><li>So 84% of advice follows one rule: act past 69% of a pipe's life</li></ul></div>
+    <div class="card"><b class="d">What’s real</b><ul class="muted"><li><b>Network:</b> W-OTL graph (SPARQL), NMD pipes &amp; liners</li><li><b>Surroundings:</b> GeoTOP soil, BAG addresses, trees</li><li><b>Street works:</b> WIOR, Stadsregie, NDW</li><li><b>Environmental impact:</b> ecoinvent MKI</li></ul></div>
+    <div class="card"><b class="r">What’s inferred or synthetic</b><ul class="muted"><li><b>Condition and failure risk:</b> classes 1–6 simulated from age and material; failure rate per class is an assumed table</li><li><b>Unit costs:</b> published Barendrecht 2023 prices</li><li><b>Closure days and peat settlement:</b> estimated</li></ul></div>
+    <div class="card"><b class="x">What doesn’t work yet</b><ul class="muted"><li><b>Advice is mostly an age rule:</b> 84% of it is reproduced by “act past 69% of a pipe’s life”</li><li><b>Costs decide how, not whether:</b> switching cost source changes 11% of advice</li><li><b>Needed:</b> Maximo costs, inspection scores, failure history</li></ul></div>
   </div>
   <p class="src"><a href="../slides/limitations.html" target="_blank" rel="noopener">Limitations in detail →</a> · <a href="../data/sewer.ifc">IFC 4.3 model with soil layers</a></p>
 </section>
