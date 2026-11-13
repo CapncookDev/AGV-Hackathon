@@ -25,7 +25,7 @@ const SRC = {
 const PARAMS = [
   { group: 'Shadow prices' },
   { key: 'carbon', label: 'CO₂ price inside MKI', unit: v => `€${v}/t`, status: 'sourced',
-    options: [[50, 'MKI set 1 · €50/t', 'nmd1'], [116, 'MKI set 2 · €116/t', 'nmd2'], [210, 'Welfare price · €210/t', 'iv']] },
+    options: [[116, 'MKI set 2 (current) · €116/t', 'nmd2'], [50, 'MKI set 1 (old) · €50/t', 'nmd1'], [210, 'Welfare price · €210/t', 'iv']] },
   { key: 'rate', label: 'Discount rate', unit: v => `${v} %`, status: 'sourced',
     options: [[2.25, 'Standard · 2.25 %', 'disc'], [1.85, 'Low · 1.85 %', 'disc'], [2.65, 'High · 2.65 %', 'disc']] },
   { key: 'treeCost', label: 'Tree within 4 m of a dig', unit: eur, status: 'partly', options: [[3500, '€3,500 per tree', 'tree']] },

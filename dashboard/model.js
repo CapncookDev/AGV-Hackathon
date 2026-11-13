@@ -6,7 +6,7 @@
 export const POF = [0, 0.001, 0.003, 0.01, 0.03, 0.08, 0.20]; // index = condition class 1..6
 
 export const DEFAULTS = {
-  carbon: 50,          // €/t CO2e used inside MKI (MKI's own weighting ≈ €50/t)
+  carbon: 116,         // €/t CO2e: current NMD weighting set 2 (EN 15804+A2); the Ecoinvent sheet itself is priced at set 1 (€50/t)
   rate: 2.25,          // discount rate, %/yr (Werkgroep discontovoet 2020)
   dayBase: 250,        // € per day of road closure, base
   dayPerAddr: 10,      // € per day per address within 30 m
