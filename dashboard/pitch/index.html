@@ -59,6 +59,22 @@ nav button:disabled { opacity: .4; cursor: default; }
   main, header, nav { padding-left: 16px; padding-right: 16px; }
 }
 @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } .by img { height: 22px; } }
+
+.print-only { display: none; }
+/* PDF hand-in: every slide on its own 16:9 page (pipeline/export_pdf.mjs) */
+@media print {
+  @page { size: 1600px 900px; margin: 0; }
+  html, body { height: auto; display: block; background: var(--bg); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  header, nav, video.film { display: none !important; }
+  main { display: block; padding: 0; overflow: visible; }
+  .slide { display: grid !important; width: 1600px; height: 900px; max-width: none; padding: 80px 120px 70px; align-content: center; break-after: page; position: relative; font-size: 22px; }
+  .slide::after { content: "Hack the Water Graph · Use Case 4 · Sewer Renewal"; position: absolute; left: 120px; bottom: 34px; font: 600 13px Inter, sans-serif; color: var(--muted); letter-spacing: .04em; }
+  h1 { font-size: 54px; } h2 { font-size: 46px; }
+  .card, .film-print img { box-shadow: none; }
+  .print-only { display: block; }
+  .film-print { display: grid; grid-template-columns: 640px 1fr; gap: 40px; align-items: center; text-decoration: none; color: inherit; }
+  .film-print img { width: 640px; border-radius: 16px; border: 1px solid var(--line); }
+}
 </style>
 </head>
 <body>
@@ -77,6 +93,7 @@ nav button:disabled { opacity: .4; cursor: default; }
 <section class="slide" data-title="The idea in one minute">
   <span class="eyebrow">The idea in one minute</span>
   <video class="film" src="../video/pitch.mp4?v=__BUILD__" poster="../video/poster.jpg?v=__BUILD__" controls playsinline preload="metadata"></video>
+  <a class="film-print print-only" href="../video/pitch.mp4"><img src="../video/poster.jpg?v=__BUILD__" alt="Pitch film poster"><span><h2>Watch the 60-second film</h2><span class="muted">capncookdev.github.io/AGV-Hackathon · slide 2 of the online deck</span></span></a>
 </section>
 
 <section class="slide" data-title="Challenge">
@@ -142,6 +159,19 @@ nav button:disabled { opacity: .4; cursor: default; }
   <a class="cta" href="../?tour=1">Open the live demo →</a>
   <div class="title-logos"><img src="img/agv-logo.svg" alt="Waterschap Amstel, Gooi en Vecht"><img src="img/waternet-logo.svg" alt="Waternet"></div>
 </section>
+
+<section class="slide print-only" data-title="Links">
+  <span class="eyebrow">Links</span>
+  <h2>Everything is online.</h2>
+  <div class="grid" style="--n:2">
+    <div class="card"><b>Pitch deck with film</b><a class="muted" href="./">capncookdev.github.io/AGV-Hackathon</a></div>
+    <div class="card"><b>Live demo with guided tour</b><a class="muted" href="../?tour=1">…/dashboard/?tour=1</a></div>
+    <div class="card"><b>IFC 4.3 model of the network, with GeoTOP soil layers</b><a class="muted" href="../data/sewer.ifc">…/dashboard/data/sewer.ifc</a></div>
+    <div class="card"><b>Limitations in detail</b><a class="muted" href="../slides/limitations.html">…/dashboard/slides/limitations.html</a></div>
+    <div class="card"><b>Source code, data pipeline and SPARQL query</b><a class="muted" href="https://github.com/CapncookDev/AGV-Hackathon">github.com/CapncookDev/AGV-Hackathon</a></div>
+  </div>
+  <p class="src">Hackathon prototype, built during Hack the Water Graph (Amsterdam, 13 November 2026). Not an official AGV or Waternet product.</p>
+</section>
 </main>
 
 <nav>
@@ -151,7 +181,7 @@ nav button:disabled { opacity: .4; cursor: default; }
 </nav>
 
 <script>
-const slides = [...document.querySelectorAll('.slide')];
+const slides = [...document.querySelectorAll('.slide:not(.print-only)')];
 const dots = document.getElementById('dots');
 let cur = 0;
 slides.forEach((s, i) => {
